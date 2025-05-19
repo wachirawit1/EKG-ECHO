@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title')</title>
-   
+
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -23,7 +23,7 @@
         }
 
         .btn-toggle.active {
-            background-color: #0d6efd;
+            background-color: #14B8A6;
             color: white;
         }
 
@@ -42,11 +42,43 @@
             overflow-y: auto;
             width: 100%;
         }
+
+        .custom-teal {
+            background-color: #14B8A6;
+        }
+
+        .btn-teal {
+            background-color: #14B8A6;
+            /* teal-500 */
+            color: #fff;
+            border: none;
+        }
+
+        .btn-teal:hover {
+            background-color: #0f766e;
+            /* teal-700 */
+            color: #fff;
+        }
+
+        .pagination .page-link {
+            color: #14B8A6;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #ccfbf1;
+            color: #0f766e;
+        }
+
+        .pagination .active .page-link {
+            background-color: #14B8A6;
+            border-color: #14B8A6;
+            color: white;
+        }
     </style>
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg bg-success" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg navbar-dark custom-teal">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">EKG-ECHO</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -60,7 +92,7 @@
                         <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
                             aria-current="page" href="/">หน้าแรก</a>
                     </li>
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">

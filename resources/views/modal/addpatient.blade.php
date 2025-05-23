@@ -20,7 +20,7 @@
                     <div class="row mb-3">
                         <div class="col">
                             <label for="titleName" class="form-label">คำนำหน้า</label>
-                            <select class="form-control" name="tiltleName" id="titleName">
+                            <select class="form-control" name="titleName" id="titleName">
                                 <option value="">เลือกคำนำหน้า</option>
                                 <option value="นาย">นาย</option>
                                 <option value="นาง">นาง</option>
@@ -58,7 +58,7 @@
 
 
                     <label for="dob" class="form-label">วันเดือนปีเกิด</label>
-                    <input type="date" class="form-control" id="dob" name="dob">
+                    <input type="date" class="form-control" id="dob" name="dob" onkeydown="return false">
 
                 </div>
                 <div class="modal-footer">

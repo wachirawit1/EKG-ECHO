@@ -10,7 +10,9 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
+    {{-- select2/bootstrap --}}
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
@@ -74,6 +76,43 @@
             border-color: #14B8A6;
             color: white;
         }
+
+        .select2-container--default .select2-selection--single {
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            height: calc(2.25rem + 2px);
+            padding: 0.375rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #212529;
+            line-height: 1.5rem;
+            padding-left: 0;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 100%;
+            right: 0.75rem;
+        }
+
+        .select2-container--default.select2-container--disabled .select2-selection--single {
+            background-color: #e9ecef;
+            /* พื้นหลังเทาแบบ Bootstrap */
+            cursor: not-allowed;
+            /* เคอร์เซอร์เปลี่ยนเป็นห้ามคลิก */
+            opacity: 1;
+            /* ป้องกัน select2 ทำให้จางเกินไป */
+            border: 1px solid #ced4da;
+            /* เส้นขอบเทาอ่อน */
+        }
+
+        .select2-container--default.select2-container--disabled .select2-selection__rendered {
+            color: #6c757d;
+            /* สีข้อความเหมือน disabled */
+        }
     </style>
 </head>
 
@@ -96,15 +135,15 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                             aria-expanded="false">
-                            Dropdown
+                            ตัวเลือก
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
+                            <li><a class="dropdown-item" href="#">ตัวเลือก 1</a></li>
+                            <li><a class="dropdown-item" href="#">ตัวเลือก 2</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
+                            <li><a class="dropdown-item" href="#">ออกจากระบบ</a></li>
                         </ul>
                     </li>
                 </ul>

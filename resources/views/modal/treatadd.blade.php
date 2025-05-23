@@ -56,13 +56,13 @@
                     <div class="mb-3">
                         <label for="t_date" class="form-label">วันที่รักษา</label>
                         <input type="date" class="form-control" value="{{ old('date', $date) }}" id="t_date"
-                            name="t_date">
+                            name="t_date" onkeydown="return false">
                     </div>
 
                     <div class="mb-3">
                         <label for="agency" class="form-label">หน่วยงาน</label>
                         <select class="form-select" aria-label="Default select example" id="agency" name="agency">
-                            <option value="">เลือกหน่วยงาน</option>
+                            <option value="">เลือกหน่วยงานส่งต่อ</option>
                             <option value="none">ไม่มี</option>
                             @foreach ($dept as $item)
                                 <option value="{{ $item->deptCode }}">{{ $item->deptCode . ' - ' . $item->deptDesc }}

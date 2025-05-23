@@ -77,7 +77,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="ward" class="form-label">วอร์ด</label>
 
-                            <select class="form-select" id="wardSelect" name="ward" disabled>
+                            <select class="select-bootstrap-style" id="wardSelect" name="ward" disabled>
                                 <option value="" selected>เลือกวอร์ด</option>
                                 <option value="none">ไม่มี</option>
                                 @foreach ($dept_list as $dept)
@@ -92,7 +92,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="doctorSelect" class="form-label">แพทย์</label>
 
-                            <select id="doctorSelect" class="form-control" name="docID" disabled>
+                            <select id="doctorSelect" class="form-select" name="docID" disabled>
                                 <option value="" selected>เลือกแพทย์</option>
                                 <option value="none">ไม่มี</option>
                                 @foreach ($doc as $doctor)
@@ -106,8 +106,8 @@
 
                     <div class="mb-3">
                         <label for="appointmentDate" class="form-label">วันที่นัด</label>
-                        <input type="date" class="form-control" id="appointmentDate" name="appointmentDate"
-                            disabled>
+                        <input type="date" class="form-control date-lock" id="appointmentDate" name="appointmentDate"
+                            disabled onkeydown="return false">
                     </div>
 
 

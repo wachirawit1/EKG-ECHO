@@ -191,7 +191,7 @@ class MainController extends Controller
 
 
             // ชื่อแพทย์
-            $item->doctor_name = ($doctor?->doctitle ?? '') . ' ' . ($doctor?->docName ?? '') . ' ' . ($doctor?->docLName ?? '');
+            $item->doctor_name = ($doctor?->doctitle ?? '') . ' ' . ($doctor?->docName ?? '-') . ' ' . ($doctor?->docLName ?? '');
 
             // ชื่อแผนก (วอร์ด)
             $wardCode = trim($item->ward ?? '');
@@ -207,9 +207,9 @@ class MainController extends Controller
 
       // ตัวอย่างหน้า 2
       if ($page === 'treatments') {
-         $currentPage = $request->query('page', 1);
+         $page = is_numeric($request->query('page')) ? (int)$request->query('page') : 1;
          $perPage = 8;
-         $offset = ($currentPage - 1) * $perPage;
+         $offset = ($page - 1) * $perPage;
 
          // ===== STEP 1: Query หลัก (ใช้ได้ทั้ง count และ get) =====
          $mysqlQuery = DB::connection('mysql')
@@ -314,7 +314,7 @@ class MainController extends Controller
          $date = now()->toDateString();
          $totalPages = ceil($total / $perPage);
 
-         return view('fragments.treatments', compact('treatments', 'date', 'totalPages', 'currentPage', 'dept'));
+         return view('fragments.treatments', compact('treatments', 'date', 'page','totalPages', 'dept'));
       }
 
       return view("fragments.$page");
@@ -386,7 +386,7 @@ class MainController extends Controller
          // insert
          DB::connection('mysql')->table('patient')->insert([
             'hn' => $hn,
-            'tile_name' => $titleName,
+            'title_name' => $titleName,
             'fname' => $fname,
             'lname' => $lname,
             'dob' => $dob,

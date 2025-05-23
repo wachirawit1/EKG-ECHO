@@ -27,12 +27,8 @@
         document.addEventListener("DOMContentLoaded", function() {
             togglePatientFields();
 
-            // const lastPage = sessionStorage.getItem('lastPage') || 'appointments';
-            // const lastParams = JSON.parse(sessionStorage.getItem('lastParams') || '{}');
 
-            // loadPage(lastPage, lastParams);
         });
-
 
         // toggle
         function togglePatientFields() {
@@ -146,8 +142,6 @@
                 if (!isSelect2Initialized) {
                     $('#wardSelect').select2({
                         dropdownParent: $('#addAppointment .modal-body'),
-                        placeholder: 'เลือกวอร์ด',
-                        allowClear: true,
                         width: '100%'
                     });
                     isSelect2Initialized = true;
@@ -155,21 +149,21 @@
             });
             $('#addAppointment').on('hidden.bs.modal', function() {
                 isSelect2Initialized = false;
+                $('#wardSelect').select2('destroy');
             });
         }
 
         function setupSelect2InModal1() {
             $('#addTreatment').on('shown.bs.modal', function() {
                 $('#agency').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#addTreatment .modal-body'),
-                    placeholder: 'หน่วยงาน',
-                    allowClear: true,
                     width: '100%'
                 });
 
                 $('#forward').select2({
+                    theme: 'bootstrap-5',
                     dropdownParent: $('#addTreatment .modal-body'),
-                    placeholder: 'ส่งต่อ',
                     allowClear: true,
                     width: '100%'
                 });
@@ -717,7 +711,7 @@
             style.id = 'global-wait-cursor';
             style.innerHTML = `
         * {
-            cursor: wait !important;
+            cursor: progress !important;
         }
     `;
             document.head.appendChild(style);

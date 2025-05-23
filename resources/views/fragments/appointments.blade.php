@@ -38,12 +38,13 @@
     {{-- Section: Search & Add --}}
     <form id="searchForm" class="d-flex gap-2" onsubmit="searchAppointments(event)">
 
-        <input type="date" class="form-control" id="start_date" name="start_date"> -
+        <input type="date" class="form-control" id="start_date" name="start_date" onkeydown="return false"> -
 
-        <input type="date" class="form-control" id="end_date" name="end_date">
+        <input type="date" class="form-control" id="end_date" name="end_date" onkeydown="return false">
 
-        <select class="form-control" name="doc_id" id="doc_id">
+        <select class="form-select" name="doc_id" id="doc_id">
             <option value="">ค้นหาด้วยหมอ</option>
+            <option value="none">ไม่มี</option>
             @foreach ($doc as $d)
                 <option value="{{ trim($d->docCode) }}" {{ request('doc_id') == trim($d->docCode) ? 'selected' : '' }}>
                     {{ $d->doctitle }}{{ $d->docName }} {{ $d->docLName }}

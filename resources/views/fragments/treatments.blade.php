@@ -33,8 +33,8 @@
 
 <div class="d-flex justify-content-md-center align-items-center d-grid gap-2 ">
     <form id="searchTreatForm" onsubmit="searchTreatments(event)" class="d-flex gap-2">
-        <input type="date" class="form-control" name="start_date" id="start_date"> -
-        <input type="date" class="form-control" name="end_date" id="end_date">
+        <input type="date" class="form-control" name="start_date" id="start_date" onkeydown="return false"> -
+        <input type="date" class="form-control" name="end_date" id="end_date" onkeydown="return false">
         <div class="input-group">
             <input class="form-control" type="search" name="hn" placeholder="ค้นหา HN..."
                 value="{{ request('hn') }}">
@@ -45,7 +45,7 @@
     <div class="btn-group">
         {{-- modal trigger --}}
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTreatment">
-            <i class="bi bi-plus-circle"></i> เพิ่มการรักษา
+            <i class="bi bi-plus-circle"></i> เพิ่มการตรวจ EKG
         </button>
 
 
@@ -84,6 +84,7 @@
                     <tr>
                         <th>#</th>
                         <th>วันที่รักษา</th>
+                        <th>HN</th>
                         <th>ชื่อ-นามสกุล</th>
                         <th>อายุ</th>
                         <th>หน่วยงาน</th>
@@ -96,6 +97,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ formatThaiDate($item->t_date) }}</td>
+                            <td>{{ $item->hn }}</td>
                             <td>{{ $item->patient_name }}</td>
                             <td>{{ $item->age_text }}</td>
                             <td>{{ $item->dept_name }}</td>

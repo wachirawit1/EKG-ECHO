@@ -1,1 +1,5 @@
+<<<<<<< Updated upstream
 a:3:{s:6:"_token";s:40:"bQhRrErFSXfPK8Vq9ayXPyrEY6GLlNTIqCaQcheu";s:9:"_previous";a:1:{s:3:"url";s:44:"http://127.0.0.1:8000/fragments/appointments";}s:6:"_flash";a:2:{s:3:"old";a:0:{}s:3:"new";a:0:{}}}
+=======
+a:3:{s:6:"_token";s:40:"4zTRddP2006AHmPjYQGBiab4hJy0HCnCwYbKkbtt";s:9:"_previous";a:1:{s:3:"url";s:44:"http://127.0.0.1:8000/fragments/appointments";}s:6:"_flash";a:2:{s:3:"old";a:0:{}s:3:"new";a:0:{}}}
+>>>>>>> Stashed changes

@@ -33,12 +33,16 @@
 
 <div class="d-flex justify-content-md-center align-items-center d-grid gap-2 ">
     <form id="searchTreatForm" onsubmit="searchTreatments(event)" class="d-flex gap-2">
-        <input type="date" class="form-control" name="start_date" id="start_date" onkeydown="return false"> -
-        <input type="date" class="form-control" name="end_date" id="end_date" onkeydown="return false">
+        <input type="date" class="form-control" name="start_date" id="start_date" value="{{ request('start_date') }}"
+            onkeydown="return false"> -
+        <input type="date" class="form-control" name="end_date" id="end_date" value="{{ request('end_date') }}"
+            onkeydown="return false">
         <div class="input-group">
             <input class="form-control" type="search" name="hn" placeholder="ค้นหา HN..."
                 value="{{ request('hn') }}">
-            <button class="btn btn-primary" type="submit">ค้นหา</button>
+            <button class="btn btn-teal" type="submit">
+                <i class="bi bi-search"></i> ค้นหา
+            </button>
         </div>
     </form>
 
@@ -51,7 +55,7 @@
 
         {{-- Add new patient --}}
         <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPatient">
-            เพิ่มคนไข้นอก
+            <i class="bi bi-person-fill-add"></i> เพิ่มคนไข้นอก
         </button>
     </div>
 
@@ -61,7 +65,7 @@
 @include('modal.treatadd')
 
 @if (request('hn') || (request('start_date') && request('end_date')))
-    <span class="my-2">
+    <span class="my-3">
         ผลการค้นหา
         @if (request('hn'))
             HN: "{{ request('hn') }}"
@@ -238,7 +242,7 @@
                 {{-- ปุ่ม Previous --}}
                 <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
                     <button class="page-link page-btn" data-page="{{ $page - 1 }}"
-                        {{ $page == 1 ? 'disabled' : '' }}>Previous</button>
+                        {{ $page == 1 ? 'disabled' : '' }}>ก่อนหน้า</button>
                 </li>
 
                 {{-- ลูปเลขหน้าแบบฉลาด --}}
@@ -272,7 +276,7 @@
                 {{-- ปุ่ม Next --}}
                 <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
                     <button class="page-link page-btn" data-page="{{ $page + 1 }}"
-                        {{ $page == $totalPages ? 'disabled' : '' }}>Next</button>
+                        {{ $page == $totalPages ? 'disabled' : '' }}>ถัดไป</button>
                 </li>
             </ul>
         </nav>

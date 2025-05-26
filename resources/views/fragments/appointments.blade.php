@@ -38,9 +38,11 @@
     {{-- Section: Search & Add --}}
     <form id="searchForm" class="d-flex gap-2" onsubmit="searchAppointments(event)">
 
-        <input type="date" class="form-control" id="start_date" name="start_date" onkeydown="return false"> -
+        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request('start_date') }}"
+            onkeydown="return false"> -
 
-        <input type="date" class="form-control" id="end_date" name="end_date" onkeydown="return false">
+        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request('end_date') }}"
+            onkeydown="return false">
 
         <select class="form-select" name="doc_id" id="doc_id">
             <option value="">ค้นหาด้วยหมอ</option>
@@ -55,7 +57,7 @@
         <div class="input-group">
             <input class="form-control" type="search" name="hn" placeholder="ค้นหา HN..."
                 value="{{ request('hn') }}">
-            <button class="btn btn-primary" type="submit">
+            <button class="btn btn-teal" type="submit">
                 <i class="bi bi-search"></i> ค้นหา
             </button>
         </div>
@@ -70,7 +72,7 @@
 
         {{-- Add new patient --}}
         <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPatient">
-            เพิ่มคนไข้นอก
+            <i class="bi bi-person-fill-add"></i> เพิ่มคนไข้นอก
         </button>
 
     </div>
@@ -81,7 +83,7 @@
 
 </div>
 @if (request('hn') || ((request('start_date') && request('end_date')) || request('doc_id')))
-    <span class="my-2">
+    <span class="my-3">
         ผลการค้นหา
         @if (request('hn'))
             HN: "{{ request('hn') }}"
@@ -261,7 +263,8 @@
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    ต้องการลบนัดหมายของ <strong>HN: {{ $item->hn . ' - ' . $item->patient_name }}</strong>
+                                                    ต้องการลบนัดหมายของ <strong>HN:
+                                                        {{ $item->hn . ' - ' . $item->patient_name }}</strong>
                                                     หรือไม่?
                                                 </div>
                                                 <div class="modal-footer">
@@ -289,7 +292,7 @@
                 {{-- ปุ่ม Previous --}}
                 <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
                     <button class="page-link page-btn" data-page="{{ $page - 1 }}"
-                        {{ $page == 1 ? 'disabled' : '' }}>Previous</button>
+                        {{ $page == 1 ? 'disabled' : '' }}>ก่อนหน้า</button>
                 </li>
 
                 {{-- ลูปเลขหน้าแบบฉลาด --}}
@@ -323,7 +326,7 @@
                 {{-- ปุ่ม Next --}}
                 <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
                     <button class="page-link page-btn" data-page="{{ $page + 1 }}"
-                        {{ $page == $totalPages ? 'disabled' : '' }}>Next</button>
+                        {{ $page == $totalPages ? 'disabled' : '' }}>ถัดไป</button>
                 </li>
             </ul>
         </nav>

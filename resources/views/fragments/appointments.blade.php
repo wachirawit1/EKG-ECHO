@@ -81,7 +81,7 @@
 
 </div>
 @if (request('hn') || ((request('start_date') && request('end_date')) || request('doc_id')))
-    <p class="my-2">
+    <span class="my-2">
         ผลการค้นหา
         @if (request('hn'))
             HN: "{{ request('hn') }}"
@@ -97,7 +97,8 @@
             {{ $selectedDoc ? $selectedDoc->doctitle . ' ' . $selectedDoc->docName . ' ' . $selectedDoc->docLName : 'ไม่พบข้อมูลแพทย์' }}
         @endif
         ทั้งหมด {{ count($data) }} รายการ
-    </p>
+    </span>
+    <span class="ms-auto"><a href="javascript:void(0)" id="resetSearch">คืนค่า</a></span>
 @endif
 
 <table class="table table-hover table-striped border ">
@@ -260,7 +261,7 @@
                                                         data-bs-dismiss="modal"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    ต้องการลบนัดหมายของ <strong>HN: {{ $item->hn }}</strong>
+                                                    ต้องการลบนัดหมายของ <strong>HN: {{ $item->hn . ' - ' . $item->patient_name }}</strong>
                                                     หรือไม่?
                                                 </div>
                                                 <div class="modal-footer">

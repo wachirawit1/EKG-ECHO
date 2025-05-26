@@ -61,7 +61,7 @@
 @include('modal.treatadd')
 
 @if (request('hn') || (request('start_date') && request('end_date')))
-    <p class="my-2">
+    <span class="my-2">
         ผลการค้นหา
         @if (request('hn'))
             HN: "{{ request('hn') }}"
@@ -70,7 +70,8 @@
             ช่วงวันที่: {{ request('start_date') }} ถึง {{ request('end_date') }}
         @endif
         ทั้งหมด {{ count($data) }} รายการ
-    </p>
+    </span>
+    <span class="ms-auto"><a href="javascript:void(0)" id="resetSearch">คืนค่า</a></span>
 @endif
 
 <table class="table table-hover table-striped  border ">

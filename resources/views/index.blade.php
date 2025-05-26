@@ -30,6 +30,9 @@
 
         });
 
+
+
+
         // toggle
         function togglePatientFields() {
             const selected = document.querySelector('input[name="resource"]:checked');
@@ -122,6 +125,13 @@
                     setupTreatmentFormValidation();
                     setupAddPatientValidation();
 
+                    document.getElementById('resetSearch')?.addEventListener('click', function() {
+                        if(page == 'appointments'){
+                            loadPage('appointments'); // แก้ path นี้ให้ตรงกับที่โหลด fragment
+                        }else{
+                            loadPage('treatments')
+                        }
+                    });
                     if (page === 'treatments') {
                         setupPatientTypeToggleInModal();
                     }

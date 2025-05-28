@@ -107,7 +107,7 @@ class AppointmentController extends Controller
 
 
         $ward =  str_pad(trim(preg_replace('/\s+/', '', $request->input('ward'))), 6, ' ', STR_PAD_RIGHT);
-
+        $note = $request->filled('note') ? $request->note : '-';
 
 
         $insert = DB::table('appointment')->insert([
@@ -117,7 +117,7 @@ class AppointmentController extends Controller
             'doc_id' => $request->docID,
             'a_date' => $request->appointmentDate,
             'a_time' => $appointmentTime,
-            'note' => $request->note,
+            'note' => $note
             // 'added_by' => $request->added_by
         ]);
 
@@ -153,7 +153,7 @@ class AppointmentController extends Controller
     // แก้ไขนัด
     public function updateAppointment(Request $request, $id)
     {
-        $a_time = $request->input('a_time_start').'-'.$request->input('a_time_end');
+        $a_time = $request->input('a_time_start') . '-' . $request->input('a_time_end');
         $updated = DB::connection('mysql')
             ->table('appointment')
             ->where('a_id', $id)

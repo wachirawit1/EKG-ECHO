@@ -20,8 +20,9 @@ class MainController extends Controller
       if ($page === 'appointments') {
 
          $page = is_numeric($request->query('page')) ? (int)$request->query('page') : 1;
-         $perPage = 8;
+         $perPage = 10;
          $offset = ($page - 1) * $perPage;
+         $today = Carbon::now()->toDateString();
 
          //ดึงจาก mysql
          $mysqlQuery = DB::connection('mysql')
@@ -32,6 +33,16 @@ class MainController extends Controller
             ->when($request->filled('start_date') && $request->filled('end_date'), function ($query) use ($request) {
                $query->whereBetween('a_date', [$request->start_date, $request->end_date]);
             })
+            ->when(
+               !$request->filled('hn') &&
+                  !$request->filled('start_date') &&
+                  !$request->filled('end_date') &&
+                  !$request->filled('doc_id'),
+               function ($query) use ($today) {
+                  // ถ้าไม่ได้กรอกอะไรเลยเลยทั้ง hn, date, doc_id → ให้ default เป็นวันนี้
+                  $query->where('a_date', '=', $today);
+               }
+            )
             ->when($request->filled('doc_id'), function ($query) use ($request) {
                $query->where('doc_id', $request->doc_id);
             });
@@ -40,7 +51,6 @@ class MainController extends Controller
          $total = $mysqlQuery->count();
 
          $appointments = $mysqlQuery
-            ->orderBy('a_date', 'ASC')
             ->offset($offset)
             ->limit($perPage)
             ->get();
@@ -202,13 +212,13 @@ class MainController extends Controller
 
          $totalPages = ceil($total / $perPage);
 
-         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'doc', 'dept_list'));
+         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'doc', 'dept_list' ,'total'));
       }
 
       // ตัวอย่างหน้า 2
       if ($page === 'treatments') {
          $page = is_numeric($request->query('page')) ? (int)$request->query('page') : 1;
-         $perPage = 8;
+         $perPage = 10;
          $offset = ($page - 1) * $perPage;
 
          // ===== STEP 1: Query หลัก (ใช้ได้ทั้ง count และ get) =====
@@ -305,16 +315,15 @@ class MainController extends Controller
             }
 
             // หน่วยงาน
-            $item->dept_name = $depts[trim($item->agency ?? '')]->deptDesc ?? '';
-            $item->dept_forward = $depts[trim($item->forward ?? '')]->deptDesc ?? '';
+            $item->dept_name = $depts[trim($item->agency ?? '')]->deptDesc ?? '-';
+            $item->dept_forward = $depts[trim($item->forward ?? '')]->deptDesc ?? '-';
 
             return $item;
          });
 
-         $date = now()->toDateString();
          $totalPages = ceil($total / $perPage);
 
-         return view('fragments.treatments', compact('treatments', 'date', 'page','totalPages', 'dept'));
+         return view('fragments.treatments', compact('treatments',  'page', 'totalPages', 'dept' , 'total'));
       }
 
       return view("fragments.$page");

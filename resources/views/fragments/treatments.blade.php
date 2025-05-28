@@ -65,18 +65,34 @@
 @include('modal.treatadd')
 
 @if (request('hn') || (request('start_date') && request('end_date')))
-    <span class="my-3">
-        ผลการค้นหา
-        @if (request('hn'))
-            HN: "{{ request('hn') }}"
-        @endif
-        @if (request('start_date') && request('end_date'))
-            ช่วงวันที่: {{ request('start_date') }} ถึง {{ request('end_date') }}
-        @endif
-        ทั้งหมด {{ count($data) }} รายการ
-    </span>
-    <span class="ms-auto"><a href="javascript:void(0)" id="resetSearch">คืนค่า</a></span>
+    <div class="bg-light border rounded p-3 my-3 d-flex justify-content-between align-items-center flex-wrap">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <strong class="text-primary me-2">
+                <i class="fas fa-search me-1"></i>
+                ผลการค้นหา:
+            </strong>
+
+            @if (request('hn'))
+                <span class="badge bg-primary">HN: {{ request('hn') }}</span>
+            @endif
+
+            @if (request('start_date') && request('end_date'))
+                <span class="badge bg-success">
+                    {{ date('d/m/Y', strtotime(request('start_date'))) }} -
+                    {{ date('d/m/Y', strtotime(request('end_date'))) }}
+                </span>
+            @endif
+
+            <span class="badge bg-secondary">{{ $total }} รายการ</span>
+        </div>
+
+        <a href="javascript:void(0)" class="btn btn-outline-danger btn-sm mt-2 mt-md-0" id="resetSearch">
+            <i class="fas fa-times me-1"></i>
+            คืนค่า
+        </a>
+    </div>
 @endif
+
 
 <table class="table table-hover table-striped  border ">
     <div class="table-responsive">
@@ -235,50 +251,8 @@
 
 
     </div>
+    
     {{-- pagination --}}
-    @if ($totalPages > 1)
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-start">
-                {{-- ปุ่ม Previous --}}
-                <li class="page-item {{ $page == 1 ? 'disabled' : '' }}">
-                    <button class="page-link page-btn" data-page="{{ $page - 1 }}"
-                        {{ $page == 1 ? 'disabled' : '' }}>ก่อนหน้า</button>
-                </li>
+    <x-pagination :page="$page" :totalPages="$totalPages" />
 
-                {{-- ลูปเลขหน้าแบบฉลาด --}}
-                @php
-                    $start = max(1, $page - 2);
-                    $end = min($totalPages, $page + 2);
-                @endphp
-
-                @if ($start > 1)
-                    <li class="page-item"><button class="page-link page-btn" data-page="1">1</button></li>
-                    @if ($start > 2)
-                        <li class="page-item disabled"><button class="page-link" disabled>...</button></li>
-                    @endif
-                @endif
-
-                @for ($i = $start; $i <= $end; $i++)
-                    <li class="page-item {{ $page == $i ? 'active' : '' }}">
-                        <button class="page-link page-btn"
-                            data-page="{{ $i }}">{{ $i }}</button>
-                    </li>
-                @endfor
-
-                @if ($end < $totalPages)
-                    @if ($end < $totalPages - 1)
-                        <li class="page-item disabled"><button class="page-link" disabled>...</button></li>
-                    @endif
-                    <li class="page-item"><button class="page-link page-btn"
-                            data-page="{{ $totalPages }}">{{ $totalPages }}</button></li>
-                @endif
-
-                {{-- ปุ่ม Next --}}
-                <li class="page-item {{ $page == $totalPages ? 'disabled' : '' }}">
-                    <button class="page-link page-btn" data-page="{{ $page + 1 }}"
-                        {{ $page == $totalPages ? 'disabled' : '' }}>ถัดไป</button>
-                </li>
-            </ul>
-        </nav>
-    @endif
 </table>

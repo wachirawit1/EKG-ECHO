@@ -116,7 +116,11 @@
             fetch(fullUrl)
                 .then(res => res.text())
                 .then(html => {
-                    document.getElementById('main-content').innerHTML = html;
+                    const container = document.getElementById('main-content');
+                    container.innerHTML = html;
+                    container.scrollIntoView({
+                        behavior: 'smooth'
+                    });
 
                     setupSelect2InModal();
                     setupSelect2InModal1();
@@ -126,9 +130,12 @@
                     setupAddPatientValidation();
 
                     document.getElementById('resetSearch')?.addEventListener('click', function() {
-                        if(page == 'appointments'){
+                        // รีเซ็ตเงื่อนไขการค้นหา
+                        if (page == 'appointments') {
+                            currentSearchParams = {};
                             loadPage('appointments'); // แก้ path นี้ให้ตรงกับที่โหลด fragment
-                        }else{
+                        } else {
+                            currentTreatmentSearchParams = {};
                             loadPage('treatments')
                         }
                     });
@@ -174,7 +181,6 @@
                 $('#forward').select2({
                     theme: 'bootstrap-5',
                     dropdownParent: $('#addTreatment .modal-body'),
-                    allowClear: true,
                     width: '100%'
                 });
             });
@@ -190,13 +196,42 @@
         function setupPaginationLinks() {
             const paginationButtons = document.querySelectorAll('#main-content .page-btn');
             paginationButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const pageNum = this.getAttribute('data-page');
-                    const currentPage = document.querySelector('.btn-toggle.active')?.id.replace('btn-',
-                        '') || 'appointments';
-                    loadPage(currentPage, {
-                        page: pageNum
-                    });
+
+                    // const currentPage = document.querySelector('.btn-toggle.active')?.id.replace('btn-',
+                    //     '') || 'appointments';
+
+                    // loadPage(currentPage, {
+                    //     page: pageNum
+                    // });
+                    // รวมเงื่อนไขการค้นหาปัจจุบันกับหมายเลขหน้าใหม่
+                    // ตรวจสอบว่าอยู่หน้าไหนจาก URL หรือจาก element บนหน้า
+                    const currentUrl = window.location.pathname;
+                    let params = {};
+                    let pageName = '';
+
+                    // ตรวจสอบจาก content ที่แสดงอยู่ในหน้า
+                    if (document.querySelector('#searchForm')) {
+                        // หน้า appointments
+                        pageName = 'appointments';
+                        params = {
+                            ...currentSearchParams,
+                            page: pageNum
+                        };
+                    } else if (document.querySelector('#searchTreatForm')) {
+                        // หน้า treatments
+                        pageName = 'treatments';
+                        params = {
+                            ...currentTreatmentSearchParams,
+                            page: pageNum
+                        };
+                    }
+
+                    if (pageName) {
+                        loadPage(pageName, params);
+                    }
                 });
             });
         }
@@ -663,7 +698,9 @@
         });
 
 
-
+        // เก็บเงื่อนไขการค้นหาปัจจุบัน
+        let currentSearchParams = {};
+        let currentTreatmentSearchParams = {};
 
         // ค้นหานัดโดย hn
         function searchAppointments(e) {
@@ -675,12 +712,18 @@
             const doc_id = formData.get('doc_id');
             const start_date = formData.get('start_date');
             const end_date = formData.get('end_date');
-
-            loadPage('appointments', {
+            // เก็บเงื่อนไขการค้นหาไว้
+            currentSearchParams = {
                 hn,
                 start_date,
                 end_date,
                 doc_id
+            };
+
+            // รีเซ็ตไปหน้าแรกเมื่อค้นหาใหม่
+            loadPage('appointments', {
+                ...currentSearchParams,
+                page: 1
             });
         }
 
@@ -693,10 +736,17 @@
             const hn = formData.get('hn');
             const start_date = formData.get('start_date');
             const end_date = formData.get('end_date');
-            loadPage('treatments', {
-                hn: hn,
+            // เก็บเงื่อนไขการค้นหาไว้สำหรับ treatments
+            currentTreatmentSearchParams = {
+                hn,
                 start_date,
                 end_date
+            };
+
+            // รีเซ็ตไปหน้าแรกเมื่อค้นหาใหม่
+            loadPage('treatments', {
+                ...currentTreatmentSearchParams,
+                page: 1
             });
 
 

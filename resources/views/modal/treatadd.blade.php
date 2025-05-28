@@ -55,7 +55,7 @@
 
                     <div class="mb-3">
                         <label for="t_date" class="form-label">วันที่รักษา</label>
-                        <input type="date" class="form-control" value="{{ old('date', $date) }}" id="t_date"
+                        <input type="date" class="form-control" id="t_date"
                             name="t_date" onkeydown="return false">
                     </div>
 

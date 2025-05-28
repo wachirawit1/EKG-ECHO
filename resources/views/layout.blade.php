@@ -153,7 +153,7 @@
             </div>
         </div>
     </nav>
-    <div class="container mt-4 mb-5">
+    <div class="container">
         @yield('content')
     </div>
 

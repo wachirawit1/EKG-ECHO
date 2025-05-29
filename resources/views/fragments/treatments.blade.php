@@ -116,7 +116,7 @@
                 <tbody>
                     @foreach ($treatments as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ ($page - 1) * $perPage + $index + 1 }}</td>
                             <td>{{ formatThaiDate($item->t_date) }}</td>
                             <td>{{ $item->hn }}</td>
                             <td>{{ $item->patient_name }}</td>

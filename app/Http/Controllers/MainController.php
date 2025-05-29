@@ -329,7 +329,7 @@ class MainController extends Controller
          $endNum = min($total, $page * $perPage);
 
 
-         return view('fragments.treatments', compact('treatments',  'page', 'totalPages', 'dept', 'total', 'startNum', 'endNum'));
+         return view('fragments.treatments', compact('treatments',  'page', 'perPage', 'totalPages', 'dept', 'total', 'startNum', 'endNum'));
       }
 
       return view("fragments.$page");

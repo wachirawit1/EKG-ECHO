@@ -211,8 +211,11 @@ class MainController extends Controller
          });
 
          $totalPages = ceil($total / $perPage);
+         $startNum = ($page - 1) * $perPage + 1;
+         $endNum = min($total, $page * $perPage);
 
-         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'doc', 'dept_list' ,'total'));
+
+         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'dept_list', 'total', 'startNum', 'endNum'));
       }
 
       // ตัวอย่างหน้า 2
@@ -322,8 +325,11 @@ class MainController extends Controller
          });
 
          $totalPages = ceil($total / $perPage);
+         $startNum = ($page - 1) * $perPage + 1;
+         $endNum = min($total, $page * $perPage);
 
-         return view('fragments.treatments', compact('treatments',  'page', 'totalPages', 'dept' , 'total'));
+
+         return view('fragments.treatments', compact('treatments',  'page', 'totalPages', 'dept', 'total', 'startNum', 'endNum'));
       }
 
       return view("fragments.$page");

@@ -145,9 +145,9 @@
 
                                             <!-- Modal Body -->
                                             <div class="modal-body">
-                                                <button type="button"
+                                                {{-- <button type="button"
                                                     class="d-flex my-2 ms-auto btn btn-warning edit-btn"
-                                                    data-id="{{ $item->t_id }}">แก้ไข</button>
+                                                    data-id="{{ $item->t_id }}">แก้ไข</button> --}}
                                                 <form id="treatmentInfoForm{{ $item->t_id }}">
                                                     <div class="row">
                                                         <div class="col mb-3">
@@ -197,10 +197,10 @@
                                             <div class="modal-footer">
                                                 <button type="button" class="btn btn-secondary"
                                                     data-bs-dismiss="modal">ปิด</button>
-                                                <button type="button" class="btn btn-primary save-btn"
+                                                {{-- <button type="button" class="btn btn-primary save-btn"
                                                     data-id="{{ $item->t_id }}" disabled>
                                                     บันทึกข้อมูล
-                                                </button>
+                                                </button> --}}
                                             </div>
                                         </div>
                                     </div>
@@ -251,8 +251,8 @@
 
 
     </div>
-    
+
     {{-- pagination --}}
-    <x-pagination :page="$page" :totalPages="$totalPages" />
+    <x-pagination :page="$page" :totalPages="$totalPages" :startNum="$startNum" :endNum="$endNum" :total="$total" />
 
 </table>

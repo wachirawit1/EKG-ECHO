@@ -46,7 +46,7 @@
 
         <select class="form-select" name="doc_id" id="doc_id">
             <option value="">ค้นหาด้วยหมอ</option>
-            <option value="none">ไม่มี</option>
+            <option value="none" {{ request('doc_id') == 'none' ? 'selected' : '' }}>ไม่มี</option>
             @foreach ($doc as $d)
                 <option value="{{ trim($d->docCode) }}" {{ request('doc_id') == trim($d->docCode) ? 'selected' : '' }}>
                     {{ $d->doctitle }}{{ $d->docName }} {{ $d->docLName }}
@@ -102,12 +102,12 @@
                 </span>
             @endif
 
-            @if (request('doc_id'))
+            @if (request('doc_id') && request('doc_id') != '')
                 @php
                     $selectedDoc = $doc->firstWhere('docCode', request('doc_id'));
                 @endphp
                 <span class="badge bg-warning text-dark">
-                    {{ $selectedDoc ? $selectedDoc->doctitle . ' ' . $selectedDoc->docName . ' ' . $selectedDoc->docLName : 'ไม่พบข้อมูลแพทย์' }}
+                    {{ $selectedDoc ? $selectedDoc->doctitle . ' ' . $selectedDoc->docName . ' ' . $selectedDoc->docLName : 'ไม่มี' }}
                 </span>
             @endif
 
@@ -137,18 +137,27 @@
                         <th>ชื่อ-นามสกุล</th>
                         <th>วอร์ด</th>
                         <th>แพทย์ รพ.โรงพยาบาลบุรีรัมย์</th>
+                        <th>สถานะ</th>
                         <th colspan="2" class="text-center">การจัดการ</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($data as $index => $item)
                         <tr>
-                            <td>{{ $index + 1 }}</td>
+                            <td>{{ ($page - 1) * $perPage + $index + 1 }}</td>
                             <td>{{ formatThaiDate($item->a_date) }}</td>
                             <td>{{ $item->hn }}</td>
                             <td>{{ $item->patient_name ?? '-' }}</td>
                             <td>{{ $item->dept_name }}</td>
                             <td>{{ $item->doctor_name }}</td>
+                            <td>
+                                @if ($index % 2 === 0)
+                                    <span class="badge rounded-pill text-bg-success">success</span>
+                                @else
+                                    <span class="badge rounded-pill text-bg-danger">fail</span>
+                                @endif
+
+                            </td>
                             <td class="text-center">
                                 <!-- MOdal button !-->
                                 <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
@@ -304,6 +313,6 @@
 
     </div>
     {{-- pagination --}}
-    <x-pagination :page="$page" :totalPages="$totalPages" />
+    <x-pagination :page="$page" :totalPages="$totalPages" :startNum="$startNum" :endNum="$endNum" :total="$total"/>
 
 </table>

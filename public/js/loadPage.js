@@ -60,7 +60,6 @@ function loadPage(page, params = {}) {
             });
         })
         .finally(() => {
-            // document.documentElement.style.cursor = 'default';
             resetCursor(); //  กลับ cursor เป็นปกติ
         });
 }
@@ -112,13 +111,7 @@ function setupPaginationLinks() {
             e.preventDefault();
             const pageNum = this.getAttribute('data-page');
 
-            // const currentPage = document.querySelector('.btn-toggle.active')?.id.replace('btn-',
-            //     '') || 'appointments';
-
-            // loadPage(currentPage, {
-            //     page: pageNum
-            // });
-            // รวมเงื่อนไขการค้นหาปัจจุบันกับหมายเลขหน้าใหม่
+        
             // ตรวจสอบว่าอยู่หน้าไหนจาก URL หรือจาก element บนหน้า
             const currentUrl = window.location.pathname;
             let params = {};

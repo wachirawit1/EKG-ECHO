@@ -98,7 +98,7 @@
     <div class="table-responsive">
 
         @if ($treatments->count() === 0)
-            <div class="alert alert-warning text-center">ไม่พบข้อมูลการรักษา</div>
+            <div class="alert alert-warning text-center mt-3">ไม่พบข้อมูลการรักษา</div>
         @else
             <table class="table table-hover table-bordered align-middle">
                 <thead class="table-light">

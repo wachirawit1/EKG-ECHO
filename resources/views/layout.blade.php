@@ -145,7 +145,7 @@
                             ตัวเลือก
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">ตัวเลือก 1</a></li>
+                            <li><a class="dropdown-item" href="/test">ตัวเลือก 1</a></li>
                             <li><a class="dropdown-item" href="#">ตัวเลือก 2</a></li>
                             <li>
                                 <hr class="dropdown-divider">

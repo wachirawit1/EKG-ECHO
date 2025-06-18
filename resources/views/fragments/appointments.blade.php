@@ -137,7 +137,6 @@
                         <th>ชื่อ-นามสกุล</th>
                         <th>วอร์ด</th>
                         <th>แพทย์ รพ.โรงพยาบาลบุรีรัมย์</th>
-                        <th>สถานะ</th>
                         <th colspan="2" class="text-center">การจัดการ</th>
                     </tr>
                 </thead>
@@ -150,14 +149,6 @@
                             <td>{{ $item->patient_name ?? '-' }}</td>
                             <td>{{ $item->dept_name }}</td>
                             <td>{{ $item->doctor_name }}</td>
-                            <td>
-                                @if ($index % 2 === 0)
-                                    <span class="badge rounded-pill text-bg-success">success</span>
-                                @else
-                                    <span class="badge rounded-pill text-bg-danger">fail</span>
-                                @endif
-
-                            </td>
                             <td class="text-center">
                                 <!-- MOdal button !-->
                                 <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"

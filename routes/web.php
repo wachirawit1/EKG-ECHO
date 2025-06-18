@@ -3,6 +3,7 @@
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\TreatmentController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
@@ -43,4 +44,6 @@ Route::get('/api/search-doctors', [AppointmentController::class, 'searchDoctors'
 
 // เพิ่มคนไข้ใหม่
 Route::POST('/patient/add', [MainController::class, 'addPatient'])->name('patient.add');
+
+Route::get('/test' , [TestController::class, 'renderView'] );
 

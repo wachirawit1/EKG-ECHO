@@ -1,4 +1,5 @@
-<div class="modal fade" id="addAppointment" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<div class="modal fade" id="addAppointment" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
 
@@ -80,10 +81,8 @@
                             <select class="select-bootstrap-style" id="wardSelect" name="ward" disabled>
                                 <option value="" selected>เลือกวอร์ด</option>
                                 <option value="none">ไม่มี</option>
-                                @foreach ($dept_list as $dept)
-                                    <option value="{{ $dept->deptCode }}">
-                                        {{ $dept->deptCode . ' - ' . $dept->deptDesc }}
-                                    </option>
+                                @foreach ($combined as $item)
+                                    <option value="{{ $item->type }}:{{ $item->id }}">{{ $item->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -95,9 +94,8 @@
                             <select id="doctorSelect" class="form-select" name="docID" disabled>
                                 <option value="" selected>เลือกแพทย์</option>
                                 <option value="none">ไม่มี</option>
-                                @foreach ($doc as $doctor)
-                                    <option value="{{ $doctor->docCode }}">
-                                        {{ $doctor->doctitle . ' ' . $doctor->docName . ' ' . $doctor->docLName }}
+                                @foreach ($combined as $item)
+                                    <option value="{{ $item->type }}:{{ $item->id }}">{{ $item->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -106,8 +104,8 @@
 
                     <div class="mb-3">
                         <label for="appointmentDate" class="form-label">วันที่นัด</label>
-                        <input type="date" class="form-control date-lock" id="appointmentDate" name="appointmentDate"
-                            disabled onkeydown="return false">
+                        <input type="date" class="form-control date-lock" id="appointmentDate"
+                            name="appointmentDate" disabled onkeydown="return false">
                     </div>
 
 
@@ -124,7 +122,7 @@
                         <!-- ตัวเลือก 2 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time2"
-                                value="11:00-11:30" disabled/>
+                                value="11:00-11:30" disabled />
                             <label class="form-check-label" for="time2">11:00 - 11:30</label>
                         </div>
 

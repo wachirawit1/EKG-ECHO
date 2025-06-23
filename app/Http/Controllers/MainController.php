@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class MainController extends Controller
 {
@@ -118,7 +119,39 @@ class MainController extends Controller
          // ทำ drop down วอร์ด
          $dept_list = DB::connection('sqlsrv')
             ->table('DEPT')
-            ->get();
+            ->selectRaw("RTRIM(deptCode)+' - '+RTRIM(deptDesc) as name, RTRIM(deptCode) as id")
+            ->whereNotIn('deptDesc', [
+               'ยกเลิก',
+               '(ยกเลิก) พัฒนาการเด็ก',
+               '(ยกเลิก) คลินิกโรคเลือดในเด็ก',
+               '(ยกเลิก)คลินิกนมแม่'
+            ])
+            ->get()
+            ->map(function ($item) {
+               return (object)[
+                  'id' => $item->id,
+                  'name' => $item->name,
+                  'type' => 'dept',
+               ];
+            });
+
+
+
+         $ward_list = DB::connection('sqlsrv')
+            ->table('Ward')
+            ->selectRaw("RTRIM(ward_id)+' - '+RTRIM(ward_name) as name, RTRIM(ward_id) as id")
+            ->whereNotIn('ward_id', [/* ... */])
+            ->whereRaw("ISNULL(UNUSES, '') <> 'Y'")
+            ->get()
+            ->map(function ($item) {
+               return (object)[
+                  'id' => $item->id,
+                  'name' => $item->name,
+                  'type' => 'ward',
+               ];
+            });
+
+         $combined = $ward_list->merge($dept_list)->sortBy('name')->values();
 
 
          // map ช้อมูลผู้ป่วยเข้ากับ appointment
@@ -215,7 +248,7 @@ class MainController extends Controller
          $endNum = min($total, $page * $perPage);
 
 
-         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'dept_list', 'total', 'startNum', 'endNum'));
+         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'combined', 'total', 'startNum', 'endNum'));
       }
 
       // ตัวอย่างหน้า 2

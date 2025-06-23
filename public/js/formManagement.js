@@ -105,15 +105,29 @@ document.getElementById('main-content').addEventListener('input', async function
     if (['fname', 'lname'].includes(target.id)) {
         const fname = modal.querySelector('#fname')?.value.trim();
         const lname = modal.querySelector('#lname')?.value.trim();
-
-        const fieldsToToggle = ["tel", "wardSelect", "doctorSelect", "appointmentDate", "note"];
+    
         const shouldEnable = fname && lname;
-
+    
+        // ปลดล็อกฟิลด์ทั่วไป
+        const fieldsToToggle = ["tel", "wardSelect", "doctorSelect", "appointmentDate", "note"];
         fieldsToToggle.forEach(id => {
             const el = modal.querySelector(`#${id}`);
             if (el) el.disabled = !shouldEnable;
         });
+    
+        // ปลดล็อก radio ของช่วงเวลา
+        const radios = modal.querySelectorAll('input[name="appointment_time"]');
+        radios.forEach(radio => {
+            radio.disabled = !shouldEnable;
+        });
+    
+        // ปลดล็อก custom time input ด้วย
+        const customTimeInputs = modal.querySelectorAll('#custom_start_time, #custom_end_time');
+        customTimeInputs.forEach(input => {
+            input.disabled = !shouldEnable;
+        });
     }
+    
 });
 
 // ปุ้มอัพเดตนัด

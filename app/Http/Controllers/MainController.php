@@ -70,8 +70,14 @@ class MainController extends Controller
             ->unique()
             ->toArray();
 
-         //ดึงรหัสวอร์ด
+         //ดึงรหัสแผนก
          $deptCodes = $appointments
+            ->pluck('ward')
+            ->filter()
+            ->unique()
+            ->toArray();
+
+         $wardCodes = $appointments
             ->pluck('ward')
             ->filter()
             ->unique()
@@ -106,6 +112,14 @@ class MainController extends Controller
                return trim($item->deptCode);
             });
 
+         $wards = DB::connection('sqlsrv')
+            ->table('Ward')
+            ->whereIn(DB::raw('RTRIM(ward_id)'), $wardCodes)
+            ->get()
+            ->keyBy(function ($item) {
+               return trim($item->ward_id);
+            });
+
          // ทำ drop down หมอ
          $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
          $doc = DB::connection('sqlsrv')
@@ -114,55 +128,113 @@ class MainController extends Controller
             ->orderBy('docCode')
             ->get();
 
-         // dd($doc);
 
          // ทำ drop down วอร์ด
+         $excludedDeptDesc = [
+            'ยกเลิก',
+            '(ยกเลิก) พัฒนาการเด็ก',
+            '(ยกเลิก) คลินิกโรคเลือดในเด็ก',
+            '(ยกเลิก)คลินิกนมแม่',
+         ];
+
          $dept_list = DB::connection('sqlsrv')
             ->table('DEPT')
-            ->selectRaw("RTRIM(deptCode)+' - '+RTRIM(deptDesc) as name, RTRIM(deptCode) as id")
-            ->whereNotIn('deptDesc', [
-               'ยกเลิก',
-               '(ยกเลิก) พัฒนาการเด็ก',
-               '(ยกเลิก) คลินิกโรคเลือดในเด็ก',
-               '(ยกเลิก)คลินิกนมแม่'
-            ])
-            ->get()
-            ->map(function ($item) {
-               return (object)[
-                  'id' => $item->id,
-                  'name' => $item->name,
-                  'type' => 'dept',
-               ];
-            });
+            ->select(
+               DB::raw("RTRIM(deptCode) + ' - ' + RTRIM(deptDesc) AS NameDept"),
+               '*'
+            )
+            ->whereNotIn('deptDesc', $excludedDeptDesc)
+            ->get();
 
-
+         $excludedWardIds = [
+            'IQF01',
+            'IQF02',
+            'IQF03',
+            'IQF04',
+            'IQF05',
+            'IQF06',
+            'IQF07',
+            'IQF08',
+            'IQF09',
+            'IQF10',
+            'IQF11',
+            'IQF12',
+            'IQF13',
+            'IQF14',
+            'IQF15',
+            'IQF16',
+            'IQF17',
+            'IQF18',
+            'IQM01',
+            'IQM02',
+            'IQM03',
+            'IQM04',
+            'IQM05',
+            'IQM06',
+            'IQM07',
+            'IQM08',
+            'IQM09',
+            'IQM10',
+            'IQM11',
+            'IQM12',
+            'IQM13',
+            'IQM14',
+            'IQM15',
+            'IQM16',
+            'IQM17',
+            'IQM18',
+            'IQM19',
+            'IQM20',
+            'IQM21',
+            'IQM22',
+            'IQM23',
+            'IQM24',
+            'IQM25',
+            'IQM26',
+            'IQM27',
+            'IQW',
+            'IQWF8',
+            'IQWF7',
+            'IQWF6',
+            'IQWM8',
+            'IQWM7',
+            'IQWM6',
+            'IQWM5',
+            'IQWM4',
+            'IQWM3',
+            'IQWM2',
+            'IQWM1'
+         ];
 
          $ward_list = DB::connection('sqlsrv')
             ->table('Ward')
-            ->selectRaw("RTRIM(ward_id)+' - '+RTRIM(ward_name) as name, RTRIM(ward_id) as id")
-            ->whereNotIn('ward_id', [/* ... */])
-            ->whereRaw("ISNULL(UNUSES, '') <> 'Y'")
-            ->get()
-            ->map(function ($item) {
-               return (object)[
-                  'id' => $item->id,
-                  'name' => $item->name,
-                  'type' => 'ward',
-               ];
-            });
+            ->select(
+               DB::raw("RTRIM(ward_id) + ' - ' + RTRIM(ward_name) AS Nameward"),
+               'ward_id',
+               'ward_name',
+               'UNUSES'
+            )
+            ->whereNotIn(DB::raw("RTRIM(ward_id)"), $excludedWardIds)
+            ->where(function ($query) {
+               $query->whereNull('UNUSES')->orWhere('UNUSES', '<>', 'Y');
+            })
+            ->orderBy('ward_name', 'asc')
+            ->get();
 
-         $combined = $ward_list->merge($dept_list)->sortBy('name')->values();
+
+
+
 
 
          // map ช้อมูลผู้ป่วยเข้ากับ appointment
-         $appointments->transform(function ($item) use ($patients, $doctors, $depts) {
+         $appointments->transform(function ($item) use ($patients, $doctors, $depts, $wards) {
             $hn = str_pad(trim($item->hn), 7, ' ', STR_PAD_LEFT);
             $patient = $patients[$hn] ?? null;
             $doctor = $doctors[$item->doc_id] ?? null;
 
 
             // ชื่อผู้ป่วย
-            $item->patient_name = (trim($patient?->titleName) ?? '') . ' ' . ($patient?->firstName ?? '') . ' ' . ($patient?->lastName ?? '');
+            $item->patient_name = (trim($patient?->titleName) ?? ' ') . ' ' . ($patient?->firstName ?? ' ') . ' ' . ($patient?->lastName ?? ' ');
 
             // ถ้าไม่พบ patient ใน SQL Server → fallback ไปใช้ MySQL
             if (trim($item->patient_name) === '') {
@@ -238,7 +310,9 @@ class MainController extends Controller
 
             // ชื่อแผนก (วอร์ด)
             $wardCode = trim($item->ward ?? '');
-            $item->dept_name = $depts[$wardCode]->deptDesc ?? '';
+
+            $item->dept_name = $depts[$wardCode]->deptDesc
+               ?? ($wards[$wardCode]->ward_name ?? '-');
 
             return $item;
          });
@@ -248,7 +322,7 @@ class MainController extends Controller
          $endNum = min($total, $page * $perPage);
 
 
-         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'combined', 'total', 'startNum', 'endNum'));
+         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'dept_list', 'ward_list', 'total', 'startNum', 'endNum'));
       }
 
       // ตัวอย่างหน้า 2

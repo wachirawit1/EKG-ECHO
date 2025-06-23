@@ -76,14 +76,21 @@
                     <div class="row">
                         {{-- วอร์ด --}}
                         <div class="col-md-6 mb-3">
-                            <label for="ward" class="form-label">วอร์ด</label>
+                            <label for="ward" class="form-label">วอร์ด/แผนก</label>
 
                             <select class="select-bootstrap-style" id="wardSelect" name="ward" disabled>
                                 <option value="" selected>เลือกวอร์ด</option>
                                 <option value="none">ไม่มี</option>
-                                @foreach ($combined as $item)
-                                    <option value="{{ $item->type }}:{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
+                                <optgroup label="วอร์ด">
+                                    @foreach ($ward_list as $item)
+                                        <option value="{{ $item->ward_id }}">{{ $item->ward_id}} - {{$item->ward_name }}</option>
+                                    @endforeach
+                                </optgroup>
+                                <optgroup label="แผนก">
+                                    @foreach ($dept_list as $item)
+                                        <option value="{{ $item->deptCode }}">{{ $item->deptCode}} - {{$item->deptDesc }}</option>
+                                    @endforeach
+                                </optgroup>
                             </select>
                         </div>
 
@@ -94,8 +101,9 @@
                             <select id="doctorSelect" class="form-select" name="docID" disabled>
                                 <option value="" selected>เลือกแพทย์</option>
                                 <option value="none">ไม่มี</option>
-                                @foreach ($combined as $item)
-                                    <option value="{{ $item->type }}:{{ $item->id }}">{{ $item->name }}
+                                @foreach ($doc as $doctor)
+                                    <option value="{{ $doctor->docCode }}">
+                                        {{ $doctor->doctitle . ' ' . $doctor->docName . ' ' . $doctor->docLName }}
                                     </option>
                                 @endforeach
                             </select>

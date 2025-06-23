@@ -14,27 +14,19 @@
                     <div class="mb-3">
                         <label for="hospital_name" class="form-label">โรงพยาบาล</label>
                         <input type="text" class="form-control" id="hospital_name" name="hospital_name"
-                            placeholder="กรอกชื่อโรงพยาบาล...">
+                            placeholder="เช่น โรงพยาบาลลำปลายมาศ">
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col">
+                    <div class="row mb-3"> 
+                        <div class="col-2">
                             <label for="titleName" class="form-label">คำนำหน้า</label>
                             <select class="form-control" name="titleName" id="titleName">
-                                <option value="">เลือกคำนำหน้า</option>
+                                <option value="">เลือก</option>
                                 <option value="นาย">นาย</option>
                                 <option value="นาง">นาง</option>
                                 <option value="นางสาว">นางสาว</option>
                             </select>
                         </div>
-                        <div class="col">
-                            <label for="id_card" class="form-label">บัตรประชาชน</label>
-                            <input type="text" class="form-control mb-2" id="id_card" name="id_card"
-                                placeholder="บัตรประชาชน...">
-                        </div>
-                    </div>
-
-                    <div class="row mb-3">
                         <div class="col">
                             <label for="fname" class="form-label">ชื่อ</label>
                             <input type="text" class="form-control " id="fname" name="fname"
@@ -56,9 +48,6 @@
                         </select>
                     </div>
 
-
-                    <label for="dob" class="form-label">วันเดือนปีเกิด</label>
-                    <input type="date" class="form-control" id="dob" name="dob" onkeydown="return false">
 
                 </div>
                 <div class="modal-footer">

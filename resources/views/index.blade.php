@@ -24,6 +24,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/loadPage.js') }}"></script>
     <script src="{{ asset('js/formManagement.js') }}"></script>
+    <script scr="{{ asset('js/appointCheck.js')}}"></script>
     <script src="{{ asset('js/search.js') }}"></script>
     <script src="{{ asset('js/cursor.js') }}"></script>
     <script>

@@ -74,21 +74,21 @@
                     </div>
 
                     <div class="row">
-                        {{-- วอร์ด --}}
+                        {{-- วอร์ด/แผนก --}}
                         <div class="col-md-6 mb-3">
                             <label for="ward" class="form-label">วอร์ด/แผนก</label>
 
                             <select class="select-bootstrap-style" id="wardSelect" name="ward" disabled>
-                                <option value="" selected>เลือกวอร์ด</option>
+                                <option value="" selected>เลือก</option>
                                 <option value="none">ไม่มี</option>
                                 <optgroup label="วอร์ด">
                                     @foreach ($ward_list as $item)
-                                        <option value="{{ $item->ward_id }}">{{ $item->ward_id}} - {{$item->ward_name }}</option>
+                                        <option value="ward:{{ $item->ward_id }}">{{ $item->ward_id}} - {{$item->ward_name }}</option>
                                     @endforeach
                                 </optgroup>
                                 <optgroup label="แผนก">
                                     @foreach ($dept_list as $item)
-                                        <option value="{{ $item->deptCode }}">{{ $item->deptCode}} - {{$item->deptDesc }}</option>
+                                        <option value="dept:{{ $item->deptCode }}">{{ $item->deptCode}} - {{$item->deptDesc }}</option>
                                     @endforeach
                                 </optgroup>
                             </select>
@@ -99,7 +99,7 @@
                             <label for="doctorSelect" class="form-label">แพทย์</label>
 
                             <select id="doctorSelect" class="form-select" name="docID" disabled>
-                                <option value="" selected>เลือกแพทย์</option>
+                                <option value="" selected>เลือก</option>
                                 <option value="none">ไม่มี</option>
                                 @foreach ($doc as $doctor)
                                     <option value="{{ $doctor->docCode }}">

@@ -8,34 +8,42 @@ use Illuminate\Support\Facades\DB;
 
 use Carbon\Carbon;
 
+use Illuminate\Support\Facades\Log;
+use Exception;
+
 
 class AppointmentController extends Controller
 {
     function formatThaiDate($date)
     {
-        $dayTH = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-        $monthTH = [
-            1 => 'มกราคม',
-            'กุมภาพันธ์',
-            'มีนาคม',
-            'เมษายน',
-            'พฤษภาคม',
-            'มิถุนายน',
-            'กรกฎาคม',
-            'สิงหาคม',
-            'กันยายน',
-            'ตุลาคม',
-            'พฤศจิกายน',
-            'ธันวาคม',
-        ];
+        try {
+            $dayTH = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+            $monthTH = [
+                1 => 'มกราคม',
+                'กุมภาพันธ์',
+                'มีนาคม',
+                'เมษายน',
+                'พฤษภาคม',
+                'มิถุนายน',
+                'กรกฎาคม',
+                'สิงหาคม',
+                'กันยายน',
+                'ตุลาคม',
+                'พฤศจิกายน',
+                'ธันวาคม',
+            ];
 
-        $time = strtotime($date);
-        $day = $dayTH[date('w', $time)];
-        $dayNum = date('j', $time);
-        $month = $monthTH[date('n', $time)];
-        $year = date('Y', $time) + 543;
+            $carbon = Carbon::parse($date);
+            $day = $dayTH[$carbon->dayOfWeek];
+            $dayNum = $carbon->day;
+            $month = $monthTH[$carbon->month];
+            $year = $carbon->year + 543;
 
-        return "วัน{$day}ที่ {$dayNum} {$month} {$year}";
+            return "วัน{$day}ที่ {$dayNum} {$month} {$year}";
+        } catch (Exception $e) {
+            Log::error('Error formatting Thai date: ' . $e->getMessage());
+            return $date; // fallback ถ้าแปลงไม่ได้
+        }
     }
 
     // โชวนัด
@@ -61,28 +69,89 @@ class AppointmentController extends Controller
 
 
     // เพิ่มนัด
+    // public function addAppointment(Request $request)
+    // {
+    //     $hn = $request->input('hn');
+
+
+    //     if ($request->resource === "in") {
+    //         // ผู้ป่วยใน
+    //         $hn = str_pad(trim(preg_replace('/\s+/', '', $hn)), 7, ' ', STR_PAD_LEFT);
+    //     } else {
+    //         // ผูป่วยนอก
+    //         $fname = $request->input('fname');
+    //         $lname = $request->input('lname');
+
+    //         // เช็คว่าคนไข้มีอยู่แล้วไหม
+    //         $existing = DB::connection('mysql')
+    //             ->table('patient')
+    //             ->where('fname', $fname)
+    //             ->where('lname', $lname)
+    //             ->first();
+
+    //         if (!$existing) {
+
+    //             return redirect()->back()->with('message', [
+    //                 'status' => 0,
+    //                 'title' => 'ไม่พบผู้ป่วย',
+    //                 'message' => "ไม่พบผู้ป่วยชื่อ $fname $lname ในระบบ"
+    //             ]);
+    //         }
+    //         $hn = $existing->hn;
+    //     }
+
+    //     $appointmentTime = $request->input('appointment_time');
+
+    //     if ($appointmentTime === 'custom') {
+    //         $start = $request->input('custom_start_time');
+    //         $end = $request->input('custom_end_time');
+
+    //         if ($start && $end) {
+    //             $appointmentTime = "$start-$end";
+    //         } else {
+    //             return;
+    //         }
+    //     }
+
+
+    //     $ward = str_pad(trim($request->input('ward')), 11, ' ', STR_PAD_RIGHT);
+
+    //     $note = $request->filled('note') ? $request->note : '-';
+
+
+    //     $insert = DB::table('appointment')->insert([
+    //         'hn' => $hn,
+    //         'tel' => $request->tel,
+    //         'ward' => $ward,
+    //         'doc_id' => $request->docID,
+    //         'a_date' => $request->appointmentDate,
+    //         'a_time' => $appointmentTime,
+    //         'note' => $note
+    //         // 'added_by' => $request->added_by
+    //     ]);
+
+    //     $message = $insert
+    //         ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มสำเร็จ']
+    //         : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'เพิ่มไม่สำเร็จ'];
+
+    //     return redirect()->back()->with('message', $message);
+    // }
+    // อัพเดท addAppointment method เพื่อเพิ่มการเช็คซ้ำก่อนบันทึก
     public function addAppointment(Request $request)
     {
         $hn = $request->input('hn');
 
-
         if ($request->resource === "in") {
-            // ผู้ป่วยใน
             $hn = str_pad(trim(preg_replace('/\s+/', '', $hn)), 7, ' ', STR_PAD_LEFT);
         } else {
-            // ผูป่วยนอก
             $fname = $request->input('fname');
             $lname = $request->input('lname');
-
-            // เช็คว่าคนไข้มีอยู่แล้วไหม
             $existing = DB::connection('mysql')
                 ->table('patient')
                 ->where('fname', $fname)
                 ->where('lname', $lname)
                 ->first();
-
             if (!$existing) {
-
                 return redirect()->back()->with('message', [
                     'status' => 0,
                     'title' => 'ไม่พบผู้ป่วย',
@@ -92,23 +161,37 @@ class AppointmentController extends Controller
             $hn = $existing->hn;
         }
 
-        $appointmentTime = $request->input('appointment_time');
+        // เช็คการนัดในวันเดียวกัน (ป้องกันการนัดซ้ำ)
+        $existingToday = DB::table('appointment')
+            ->where('hn', $hn)
+            ->where('a_date', $request->appointmentDate)
+            ->first();
 
+        if ($existingToday) {
+            return redirect()->back()->with('message', [
+                'status' => 0,
+                'title' => 'มีการนัดหมายแล้ว',
+                'message' => 'ผู้ป่วยรายนี้มีการนัดหมายในวันที่เลือกแล้ว'
+            ]);
+        }
+
+        $appointmentTime = $request->input('appointment_time');
         if ($appointmentTime === 'custom') {
             $start = $request->input('custom_start_time');
             $end = $request->input('custom_end_time');
-
             if ($start && $end) {
                 $appointmentTime = "$start-$end";
             } else {
-                return;
+                return redirect()->back()->with('message', [
+                    'status' => 0,
+                    'title' => 'ข้อมูลไม่ครบ',
+                    'message' => 'กรุณาระบุเวลาเริ่มต้นและสิ้นสุด'
+                ]);
             }
         }
 
-
-        $ward =  str_pad(trim(preg_replace('/\s+/', '', $request->input('ward'))), 6, ' ', STR_PAD_RIGHT);
+        $ward = str_pad(trim($request->input('ward')), 11, ' ', STR_PAD_RIGHT);
         $note = $request->filled('note') ? $request->note : '-';
-
 
         $insert = DB::table('appointment')->insert([
             'hn' => $hn,
@@ -118,7 +201,6 @@ class AppointmentController extends Controller
             'a_date' => $request->appointmentDate,
             'a_time' => $appointmentTime,
             'note' => $note
-            // 'added_by' => $request->added_by
         ]);
 
         $message = $insert
@@ -183,5 +265,221 @@ class AppointmentController extends Controller
             ->get();
 
         return response()->json($results);
+    }
+
+    // เช็คประวัติการนัดล่าสุด
+    public function checkAppointmentHistory(Request $request)
+    {
+        try {
+            // เพิ่ม debug log
+            Log::info('checkAppointmentHistory called', [
+                'request_data' => $request->all(),
+                'method' => $request->method(),
+                'headers' => $request->headers->all()
+            ]);
+
+            // ตรวจสอบข้อมูลที่ส่งมา
+            $resource = $request->input('resource');
+
+            if (!$resource || !in_array($resource, ['in', 'out'])) {
+                Log::warning('Invalid resource type', ['resource' => $resource]);
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'ประเภทผู้ป่วยไม่ถูกต้อง'
+                ], 400);
+            }
+
+            $hn = null;
+
+            if ($resource === "in") {
+                // ผู้ป่วยใน - ตรวจสอบและ format HN
+                $inputHn = $request->input('hn');
+
+                if (!$inputHn) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'กรุณาระบุ HN'
+                    ], 400);
+                }
+
+                // ตรวจสอบรูปแบบ HN
+                $cleanHn = trim(preg_replace('/\s+/', '', $inputHn));
+                if (!preg_match('/^\d{1,7}$/', $cleanHn)) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'HN ต้องเป็นตัวเลขไม่เกิน 7 หลัก'
+                    ], 400);
+                }
+
+                $hn = str_pad($cleanHn, 7, ' ', STR_PAD_LEFT);
+            } else {
+                // ผู้ป่วยนอก - หา HN จากชื่อ
+                $fname = trim($request->input('fname', ''));
+                $lname = trim($request->input('lname', ''));
+
+                if (!$fname || !$lname) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'กรุณาระบุชื่อและนามสกุล'
+                    ], 400);
+                }
+
+                $existing = DB::connection('mysql')
+                    ->table('patient')
+                    ->where('fname', $fname)
+                    ->where('lname', $lname)
+                    ->first();
+
+                if (!$existing) {
+                    return response()->json([
+                        'status' => 'not_found',
+                        'message' => "ไม่พบผู้ป่วยชื่อ {$fname} {$lname} ในระบบ"
+                    ]);
+                }
+                $hn = $existing->hn;
+            }
+
+            Log::info('Processing HN', ['hn' => $hn]);
+
+            // เช็คประวัติการนัดล่าสุด - ดึงจาก MySQL เฉพาะข้อมูล appointment
+            $lastAppointment = DB::connection('mysql')
+                ->table('appointment')
+                ->select('a_date', 'a_time', 'doc_id', 'ward', 'note')
+                ->where('hn', $hn)
+                ->orderBy('a_date', 'desc')
+                ->orderBy('a_id', 'desc')
+                ->first();
+
+            Log::info('Database query result', ['appointment' => $lastAppointment]);
+
+            if ($lastAppointment) {
+                // ดึงข้อมูลแพทย์จาก SQL Server
+                $doctor = null;
+                if ($lastAppointment->doc_id) {
+                    $doctor = DB::connection('sqlsrv')
+                        ->table('DOCC')
+                        ->where(DB::raw('LTRIM(docCode)'), trim($lastAppointment->doc_id))
+                        ->first();
+                }
+
+                // ดึงข้อมูลแผนก/วอร์ดจาก SQL Server
+                $wardName = '';
+                $wardRaw = $lastAppointment->ward ?? '';
+
+                if (!empty($wardRaw) && trim(strtolower($wardRaw)) !== 'none' && trim($wardRaw) !== '-') {
+                    if (strpos($wardRaw, 'dept:') !== false) {
+                        // เป็นแผนก
+                        $wardCode = trim(str_replace('dept:', '', $wardRaw));
+                        $dept = DB::connection('sqlsrv')
+                            ->table('DEPT')
+                            ->where(DB::raw('LTRIM(RTRIM(deptCode))'), $wardCode)
+                            ->first();
+                        $wardName = $dept ? trim($dept->deptDesc) : '';
+                    } elseif (strpos($wardRaw, 'ward:') !== false) {
+                        // เป็นวอร์ด
+                        $wardCode = trim(str_replace('ward:', '', $wardRaw));
+                        $ward = DB::connection('sqlsrv')
+                            ->table('Ward')
+                            ->where(DB::raw('LTRIM(RTRIM(ward_id))'), $wardCode)
+                            ->first();
+                        $wardName = $ward ? trim($ward->ward_name) : '';
+                    } else {
+                        // ไม่มี prefix ลองหาทั้งวอร์ดและแผนก
+                        $wardCode = trim($wardRaw);
+
+                        // ลองหาใน Ward ก่อน
+                        $ward = DB::connection('sqlsrv')
+                            ->table('Ward')
+                            ->where(DB::raw('LTRIM(RTRIM(ward_id))'), $wardCode)
+                            ->first();
+
+                        if ($ward) {
+                            $wardName = trim($ward->ward_name);
+                        } else {
+                            // ถ้าไม่เจอ ลองหาใน DEPT
+                            $dept = DB::connection('sqlsrv')
+                                ->table('DEPT')
+                                ->where(DB::raw('LTRIM(RTRIM(deptCode))'), $wardCode)
+                                ->first();
+                            $wardName = $dept ? trim($dept->deptDesc) : '';
+                        }
+                    }
+                }
+
+                // จัดรูปแบบชื่อแพทย์
+                $doctorName = '';
+                if ($doctor) {
+                    $doctorName = trim(
+                        ($doctor->doctitle ?? '') . ' ' .
+                            ($doctor->docName ?? '') . ' ' .
+                            ($doctor->docLName ?? '')
+                    );
+                }
+
+                // แปลงวันที่เป็นรูปแบบไทย
+                $thaiDate = $this->formatThaiDate($lastAppointment->a_date);
+
+                // เช็คว่าเป็นการนัดในอดีตหรืออนาคต
+                $appointmentDate = Carbon::parse($lastAppointment->a_date);
+                $today = Carbon::today();
+
+                $timePrefix = '';
+                if ($appointmentDate->isFuture()) {
+                    $timePrefix = 'มีการนัดหมายล่วงหน้า';
+                } elseif ($appointmentDate->isToday()) {
+                    $timePrefix = 'มีการนัดหมายวันนี้';
+                } else {
+                    $timePrefix = 'เคยมานัดล่าสุด';
+                }
+
+                $message = "{$timePrefix} {$thaiDate} เวลา {$lastAppointment->a_time}";
+
+                if ($doctorName && trim($doctorName) !== '') {
+                    $message .= " หมอ{$doctorName}";
+                }
+
+                if ($wardName && trim($wardName) !== '') {
+                    $message .= " วอร์ด/แผนก {$wardName}";
+                }
+
+                if ($lastAppointment->note && $lastAppointment->note !== '-') {
+                    $message .= " หมายเหตุ: {$lastAppointment->note}";
+                }
+
+                return response()->json([
+                    'status' => 'found',
+                    'message' => $message,
+                    'data' => [
+                        'date' => $lastAppointment->a_date,
+                        'thai_date' => $thaiDate,
+                        'time' => $lastAppointment->a_time,
+                        'doctor' => $doctorName,
+                        'ward' => $wardName,
+                        'note' => $lastAppointment->note,
+                        'is_future' => $appointmentDate->isFuture(),
+                        'is_today' => $appointmentDate->isToday()
+                    ]
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'no_history',
+                'message' => 'ไม่พบประวัติการนัดหมายก่อนหน้า'
+            ]);
+        } catch (Exception $e) {
+            // Log error สำหรับ debug
+            Log::error('Error in checkAppointmentHistory: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'stack_trace' => $e->getTraceAsString(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล กรุณาลองใหม่อีกครั้ง',
+                'debug' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 }

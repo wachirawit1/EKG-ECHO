@@ -348,22 +348,16 @@ function setupAddPatientValidation() {
 
         form.addEventListener('submit', function (e) {
             const hospitalName = form.querySelector('[name="hospital_name"]')?.value.trim();
+            const titleName = form.querySelector('[name="titleName"]')?.value.trim();
             const fname = form.querySelector('[name="fname"]')?.value.trim();
             const lname = form.querySelector('[name="lname"]')?.value.trim();
-            const idCard = form.querySelector('[name="id_card"]')?.value.trim();
-            const gender = form.querySelector('[name="gender"]')?.value;
-            const dob = form.querySelector('[name="dob"]')?.value;
 
             let errors = [];
 
             if (!hospitalName) errors.push("กรุณาเลือกโรงพยาบาล");
+            if(!titleName) errors.push("กรุณากรอกคำนำหน้า")
             if (!fname) errors.push("กรุณากรอกชื่อ");
             if (!lname) errors.push("กรุณากรอกนามสกุล");
-            if (!idCard || idCard.length !== 13) errors.push(
-                "กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก");
-            if (!gender) errors.push("กรุณาเลือกเพศ");
-            if (!dob) errors.push("กรุณาระบุวันเดือนปีเกิด");
-
             if (errors.length > 0) {
                 e.preventDefault();
                 Swal.fire({

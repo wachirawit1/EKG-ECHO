@@ -39,16 +39,6 @@
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="gender">เพศ</label>
-                        <select id="gender" name="gender" class="form-control">
-                            <option value="">เลือก</option>
-                            <option value="ช">ชาย</option>
-                            <option value="ญ">หญิง</option>
-                        </select>
-                    </div>
-
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -120,9 +120,9 @@
                             <td>{{ formatThaiDate($item->t_date) }}</td>
                             <td>{{ $item->hn }}</td>
                             <td>{{ $item->patient_name }}</td>
-                            <td>{{ $item->age_text }}</td>
-                            <td>{{ $item->dept_name }}</td>
-                            <td>{{ $item->dept_forward }}</td>
+                            <td>{{ $item->age }}</td>
+                            <td>{{ $item->agency_name }}</td>
+                            <td>{{ $item->forward_name }}</td>
                             <td class="text-center">
                                 <!-- MOdal button !-->
                                 <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
@@ -163,7 +163,7 @@
                                                             <label for="age{{ $item->t_id }}"
                                                                 class="form-label">อายุ</label>
                                                             <input class="form-control" id="age{{ $item->t_id }}"
-                                                                name="age" value="{{ $item->age_text }}" readonly>
+                                                                name="age" value="{{ $item->age }}" readonly>
                                                         </div>
                                                     </div>
                                                     {{-- <div class="mb-3">

@@ -6,7 +6,7 @@ use App\Http\Controllers\MainController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TreatmentController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 //index
 Route::get('/', [MainController::class, 'index']);
@@ -47,3 +47,6 @@ Route::POST('/patient/add', [MainController::class, 'addPatient'])->name('patien
 
 Route::get('/test' , [TestController::class, 'renderView'] );
 
+// Route หลัก
+Route::post('/check-appointment-history', [AppointmentController::class, 'checkAppointmentHistory'])
+    ->name('appointment.checkHistory');

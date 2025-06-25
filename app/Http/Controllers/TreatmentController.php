@@ -15,8 +15,8 @@ class TreatmentController extends Controller
 
         $hn = str_pad(trim($request->input('hn')), 7, ' ', STR_PAD_LEFT);
         $t_date = $request->input('t_date');
-        $agency = $request->input('agency');
-        $forward = $request->input('forward');
+        $agency = str_pad(trim($request->input('agency')), 11, ' ', STR_PAD_RIGHT);
+        $forward = str_pad(trim($request->input('forward')), 11, ' ', STR_PAD_RIGHT);
         $resource = $request->input('resource');
 
         if ($resource === 'in') {

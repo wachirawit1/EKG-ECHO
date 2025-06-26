@@ -315,7 +315,7 @@ class MainController extends Controller
 
 
             // ชื่อแพทย์
-            $item->doctor_name = ($doctor?->doctitle ?? '') . ' ' . ($doctor?->docName ?? '-') . ' ' . ($doctor?->docLName ?? '');
+            $item->doctor_name = ($doctor?->doctitle ?? '') . ' ' . ($doctor?->docName ?? 'ไม่ระบุ') . ' ' . ($doctor?->docLName ?? '');
 
             // ชื่อแผนก/วอร์ด
             // ชื่อแผนก/วอร์ด - แก้ไขการดึงค่า ward code

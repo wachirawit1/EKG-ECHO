@@ -156,7 +156,7 @@
 
 
                                 <!-- Modal info -->
-                                <div class="modal fade text-start" id="patientInfo{{ $item->a_id }}"tabindex="-1">
+                                <div class="modal fade text-start" id="patientInfo{{ $item->a_id }}" tabindex="-1">
                                     <div class="modal-dialog modal-lg">
                                         <div class="modal-content">
 
@@ -164,85 +164,135 @@
                                             <div class="modal-header">
                                                 <h5 class="modal-title fw-bold"
                                                     id="patientInfoLabel{{ $item->a_id }}">
-                                                    ข้อมูลผู้ป่วย</h5>
+                                                    ข้อมูลผู้ป่วย
+                                                </h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                     aria-label="ปิด"></button>
                                             </div>
 
                                             <!-- Modal Body -->
                                             <div class="modal-body">
-                                                <button type="button"
-                                                    class="d-flex my-2 ms-auto btn btn-warning edit-btn"
-                                                    data-id="{{ $item->a_id }}">แก้ไข</button>
-                                                <form id="patientInfoForm{{ $item->a_id }}">
-                                                    <div class="row">
-                                                        <div class="col mb-3">
-                                                            <label for="hn{{ $item->a_id }}"
-                                                                class="form-label">HN</label>
-                                                            <input type="text" class="form-control"
-                                                                id="hn{{ $item->a_id }}" name="hn"
-                                                                value="{{ trim($item->hn) . ' - ' . $item->patient_name }}"
-                                                                readonly>
-                                                        </div>
+                                                <div class="d-flex justify-content-between align-items-center my-2">
+                                                    <button type="button" class="btn btn-info print-btn"
+                                                        data-id="{{ $item->a_id }}">
+                                                        <i class="fas fa-print me-1"></i>พิมพ์ PDF
+                                                    </button>
+                                                    <button type="button" class="btn btn-warning edit-btn"
+                                                        data-id="{{ $item->a_id }}">
+                                                        แก้ไข
+                                                    </button>
+                                                </div>
 
-                                                        <div class="col mb-3">
-                                                            <label for="age{{ $item->a_id }}"
-                                                                class="form-label">อายุ</label>
-                                                            <input class="form-control" id="age{{ $item->a_id }}"
-                                                                name="age" value="{{ $item->age }}" readonly>
-                                                        </div>
-                                                    </div>
-                                                    <div class="mb-3">
-                                                        <label for="address{{ $item->a_id }}"
-                                                            class="form-label">ที่อยู่</label>
-                                                        <textarea class="form-control" id="address{{ $item->a_id }}" name="address" rows="2" readonly>{{ $item->address }}</textarea>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label"
-                                                            for="a_date_text{{ $item->a_id }}">วันที่นัด</label>
-                                                        <div class="input-group">
-
-                                                            <input class="form-control"
-                                                                id="a_date_text{{ $item->a_id }}"
-                                                                value="{{ formatThaiDate($item->a_date) }}" readonly>
-
-                                                            <input type="date" class="form-control"
-                                                                id="a_date{{ $item->a_id }}" name="a_date"
-                                                                value="{{ $item->a_date }}" readonly hidden>
-
-                                                            {{-- time show --}}
-                                                            <input type="text" id="a_time_text{{ $item->a_id }}"
-                                                                class="form-control" value="{{ $item->a_time }}"
-                                                                readonly>
-
-                                                            <!-- input time ซ่อนไว้ก่อน -->
-                                                            @php
-                                                                $parts = explode('-', $item->a_time);
-                                                                $start = $parts[0] ?? '';
-                                                                $end = $parts[1] ?? '';
-                                                            @endphp
-                                                            <input type="time" class="form-control"
-                                                                id="a_time_start{{ $item->a_id }}"
-                                                                name="a_time_start" value="{{ $start }}"
-                                                                hidden>
-                                                            <input type="time" class="form-control"
-                                                                id="a_time_end{{ $item->a_id }}" name="a_time_end"
-                                                                value="{{ $end }}" hidden>
+                                                <!-- PDF Preview Container (ซ่อนไว้) -->
+                                                <div id="pdfPreview{{ $item->a_id }}" class="pdf-preview-container"
+                                                    style="display: none;">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6>ตัวอย่าง PDF</h6>
+                                                        <div>
+                                                            <button type="button"
+                                                                class="btn btn-success btn-sm download-pdf-btn"
+                                                                data-id="{{ $item->a_id }}">
+                                                                <i class="fas fa-download me-1"></i>ดาวน์โหลด
+                                                            </button>
+                                                            <button type="button"
+                                                                class="btn btn-secondary btn-sm close-preview-btn"
+                                                                data-id="{{ $item->a_id }}">
+                                                                <i class="fas fa-times me-1"></i>ปิด
+                                                            </button>
                                                         </div>
                                                     </div>
+                                                    <div id="pdfCanvas{{ $item->a_id }}" class="border"
+                                                        style="max-height: 400px; overflow-y: auto;"></div>
+                                                </div>
 
-                                                    <div class="mb-3">
-                                                        <label for="tel{{ $item->a_id }}"
-                                                            class="form-label">เบอร์ติดต่อ</label>
-                                                        <textarea class="form-control" id="tel{{ $item->a_id }}" name="tel" rows="2" readonly>{{ $item->tel }}</textarea>
+                                                <!-- Patient Info Form (สำหรับพิมพ์) -->
+                                                <div id="printableContent{{ $item->a_id }}"
+                                                    class="printable-content">
+                                                    <div class="text-center mb-4">
+                                                        <h4>ข้อมูลผู้ป่วย</h4>
+                                                        <hr>
                                                     </div>
 
-                                                    <div class="mb-3">
-                                                        <label for="">หมายเหตุ</label>
-                                                        <textarea class="form-control" name="note" id="note{{ $item->a_id }}" rows="3" readonly>{{ $item->note }}</textarea>
-                                                    </div>
-                                                </form>
+                                                    <form id="patientInfoForm{{ $item->a_id }}">
+                                                        <div class="row">
+                                                            <div class="col mb-3">
+                                                                <label for="hn{{ $item->a_id }}"
+                                                                    class="form-label fw-bold">HN</label>
+                                                                <input type="text" class="form-control"
+                                                                    id="hn{{ $item->a_id }}" name="hn"
+                                                                    value="{{ trim($item->hn) . ' - ' . $item->patient_name }}"
+                                                                    readonly>
+                                                            </div>
+
+                                                            <div class="col mb-3">
+                                                                <label for="age{{ $item->a_id }}"
+                                                                    class="form-label fw-bold">อายุ</label>
+                                                                <input class="form-control"
+                                                                    id="age{{ $item->a_id }}" name="age"
+                                                                    value="{{ $item->age }}" readonly>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="address{{ $item->a_id }}"
+                                                                class="form-label fw-bold">ที่อยู่</label>
+                                                            <textarea class="form-control" id="address{{ $item->a_id }}" name="address" rows="2" readonly>{{ $item->address }}</textarea>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label fw-bold"
+                                                                for="a_date_text{{ $item->a_id }}">วันที่นัด</label>
+                                                            <div class="input-group">
+                                                                <input class="form-control"
+                                                                    id="a_date_text{{ $item->a_id }}"
+                                                                    value="{{ formatThaiDate($item->a_date) }}"
+                                                                    readonly>
+
+                                                                <input type="date" class="form-control"
+                                                                    id="a_date{{ $item->a_id }}" name="a_date"
+                                                                    value="{{ $item->a_date }}" readonly hidden>
+
+                                                                {{-- time show --}}
+                                                                <input type="text"
+                                                                    id="a_time_text{{ $item->a_id }}"
+                                                                    class="form-control" value="{{ $item->a_time }}"
+                                                                    readonly>
+
+                                                                <!-- input time ซ่อนไว้ก่อน -->
+                                                                @php
+                                                                    $parts = explode('-', $item->a_time);
+                                                                    $start = $parts[0] ?? '';
+                                                                    $end = $parts[1] ?? '';
+                                                                @endphp
+                                                                <input type="time" class="form-control"
+                                                                    id="a_time_start{{ $item->a_id }}"
+                                                                    name="a_time_start" value="{{ $start }}"
+                                                                    hidden>
+                                                                <input type="time" class="form-control"
+                                                                    id="a_time_end{{ $item->a_id }}"
+                                                                    name="a_time_end" value="{{ $end }}"
+                                                                    hidden>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="tel{{ $item->a_id }}"
+                                                                class="form-label fw-bold">เบอร์ติดต่อ</label>
+                                                            <textarea class="form-control" id="tel{{ $item->a_id }}" name="tel" rows="2" readonly>{{ $item->tel }}</textarea>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label for="note{{ $item->a_id }}"
+                                                                class="form-label fw-bold">หมายเหตุ</label>
+                                                            <textarea class="form-control" name="note" id="note{{ $item->a_id }}" rows="3" readonly>{{ $item->note }}</textarea>
+                                                        </div>
+
+                                                        <div class="text-end mt-4">
+                                                            <small class="text-muted">พิมพ์เมื่อ: <span
+                                                                    id="printDate{{ $item->a_id }}"></span></small>
+                                                        </div>
+                                                    </form>
+                                                </div>
                                             </div>
 
                                             <!-- Modal Footer -->
@@ -304,6 +354,6 @@
 
     </div>
     {{-- pagination --}}
-    <x-pagination :page="$page" :totalPages="$totalPages" :startNum="$startNum" :endNum="$endNum" :total="$total"/>
+    <x-pagination :page="$page" :totalPages="$totalPages" :startNum="$startNum" :endNum="$endNum" :total="$total" />
 
 </table>

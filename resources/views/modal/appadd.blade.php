@@ -59,11 +59,6 @@
                                     placeholder="กรอกนามสกุล...">
                             </div>
                         </div>
-
-
-
-
-
                     </div>
 
                     {{-- เบอร์ติดต่อ --}}
@@ -100,7 +95,7 @@
 
                             <select id="doctorSelect" class="form-select" name="docID" disabled>
                                 <option value="" selected>เลือก</option>
-                                <option value="none">ไม่มี</option>
+                                <option value="none">ไม่ระบุแพทย์</option>
                                 @foreach ($doc as $doctor)
                                     <option value="{{ $doctor->docCode }}">
                                         {{ $doctor->doctitle . ' ' . $doctor->docName . ' ' . $doctor->docLName }}

@@ -124,107 +124,145 @@
 
 
         /* CSS สำหรับแสดงการแจ้งเตือนประวัติการนัด */
-#appointment-alert {
-    border-left: 4px solid;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    animation: slideDown 0.3s ease-out;
-}
+        #appointment-alert {
+            border-left: 4px solid;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: slideDown 0.3s ease-out;
+        }
 
-#appointment-alert.alert-warning {
-    border-left-color: #f0ad4e;
-    background-color: #fcf8e3;
-    color: #8a6d3b;
-}
+        #appointment-alert.alert-warning {
+            border-left-color: #f0ad4e;
+            background-color: #fcf8e3;
+            color: #8a6d3b;
+        }
 
-#appointment-alert.alert-info {
-    border-left-color: #5bc0de;
-    background-color: #d9edf7;
-    color: #31708f;
-}
+        #appointment-alert.alert-info {
+            border-left-color: #5bc0de;
+            background-color: #d9edf7;
+            color: #31708f;
+        }
 
-#appointment-alert.alert-danger {
-    border-left-color: #d9534f;
-    background-color: #f2dede;
-    color: #a94442;
-}
+        #appointment-alert.alert-danger {
+            border-left-color: #d9534f;
+            background-color: #f2dede;
+            color: #a94442;
+        }
 
-#appointment-alert .fas {
-    color: inherit;
-    opacity: 0.8;
-}
+        #appointment-alert .fas {
+            color: inherit;
+            opacity: 0.8;
+        }
 
-@keyframes slideDown {
-    0% {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        @keyframes slideDown {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
 
-/* ปรับแต่ง input fields */
-.form-control.is-invalid {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
-}
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-.invalid-feedback {
-    display: block;
-    width: 100%;
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-    color: #dc3545;
-}
+        /* ปรับแต่ง input fields */
+        .form-control.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
 
-/* Animation สำหรับการ enable/disable fields */
-.form-control:disabled {
-    background-color: #f8f9fa;
-    opacity: 0.6;
-    transition: all 0.2s ease;
-}
+        .invalid-feedback {
+            display: block;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: #dc3545;
+        }
 
-.form-control:not(:disabled) {
-    transition: all 0.2s ease;
-}
+        /* Animation สำหรับการ enable/disable fields */
+        .form-control:disabled {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
 
-/* ปุ่ม radio ที่ disabled */
-input[type="radio"]:disabled + label {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
+        .form-control:not(:disabled) {
+            transition: all 0.2s ease;
+        }
 
-/* Select2 disabled state */
-.select2-container--disabled .select2-selection {
-    background-color: #f8f9fa !important;
-    opacity: 0.6;
-}
+        /* ปุ่ม radio ที่ disabled */
+        input[type="radio"]:disabled+label {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
 
-/* Loading state สำหรับ HN input */
-.hn-loading {
-    position: relative;
-}
+        /* Select2 disabled state */
+        .select2-container--disabled .select2-selection {
+            background-color: #f8f9fa !important;
+            opacity: 0.6;
+        }
 
-.hn-loading::after {
-    content: '';
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 16px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
+        /* Loading state สำหรับ HN input */
+        .hn-loading {
+            position: relative;
+        }
 
-@keyframes spin {
-    0% { transform: translateY(-50%) rotate(0deg); }
-    100% { transform: translateY(-50%) rotate(360deg); }
-}
+        .hn-loading::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: translateY(-50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
+
+        /* เพิ่ม CSS สำหรับ PDF */
+       .pdf-preview-container {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .printable-content {
+            background: white;
+            padding: 20px;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .printable-content .form-label {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .printable-content .form-control {
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+        }
+
+        /* สำหรับ print preview */
+        @media print {
+            .printable-content {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 

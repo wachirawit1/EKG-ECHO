@@ -65,120 +65,201 @@ function setupPatientTypeToggleInModal() {
     }
 }
 
-document.getElementById("main-content").addEventListener(
-    "input",
-    debounce(async function (e) {
-        const target = e.target;
-        const modal = target.closest(".modal");
-        if (!modal) return;
+document
+    .getElementById("main-content")
+    .addEventListener("keydown", async function (e) {
+        if (e.key === "Enter") {
+            const target = e.target;
+            const modal = target.closest(".modal");
+            if (!modal) return;
 
-        const hnInput = modal.querySelector("#hn");
-        const nameDisplay = modal.querySelector("#hn_name_display");
-        const extraFields = modal.querySelector("#extra-patient-fields");
-
-        // เมื่อพิมพ์ HN
-        if (target.id === "hn") {
-            const hn = target.value.trim();
-
-            if (!hn) {
-                nameDisplay.value = "";
-                if (extraFields) extraFields.style.display = "none";
-                clearAppointmentAlert();
-                return;
+            // ป้องกันการ submit form เมื่อกด Enter
+            if (target.id === "hn" || target.id === "fname" || target.id === "lname") {
+                e.preventDefault();
+                e.stopPropagation();
             }
 
-            if (!/^\d{1,7}$/.test(hn)) {
-                showHNError(true);
-                disableAppointmentFields();
-                clearAppointmentAlert();
-                return;
-            } else {
-                showHNError(false);
-            }
+            const hnInput = modal.querySelector("#hn");
+            const nameDisplay = modal.querySelector("#hn_name_display");
+            const extraFields = modal.querySelector("#extra-patient-fields");
 
-            try {
-                const res = await fetch(
-                    `/api/patient-name?hn=${encodeURIComponent(hn)}`
-                );
-                const data = await res.json();
-
-                if (data.name && nameDisplay) {
-                    nameDisplay.value = data.name;
-                    nameDisplay.classList.remove("text-danger");
-                    if (extraFields) extraFields.style.display = "none";
-                    await checkAppointmentHistory("in", hn);
-                } else {
-                    nameDisplay.value = "ไม่พบข้อมูล";
-                    nameDisplay.classList.add("text-danger");
-                    if (extraFields) extraFields.style.display = "block";
+            // เมื่อพิมพ์ HN
+            if (target.id === "hn") {
+                const hn = target.value.trim();
+                if (!hn) {
+                    if (nameDisplay) {
+                        nameDisplay.value = "";
+                        nameDisplay.classList.remove("text-danger");
+                    }
                     clearAppointmentAlert();
+                    disableAppointmentFields(modal);
+                    return;
                 }
 
-                const fieldsToToggle = [
-                    "tel",
-                    "wardSelect",
-                    "doctorSelect",
-                    "appointmentDate",
-                    "note",
-                ];
-                fieldsToToggle.forEach((id) => {
-                    const el = modal.querySelector(`#${id}`);
-                    if (el) el.disabled = !data.name;
-                });
+                // Validate HN format - รองรับ HN ที่มีตัวเลข 1-10 หลัก
+                if (!/^\d{1,10}$/.test(hn)) {
+                    showHNError(true);
+                    disableAppointmentFields(modal);
+                    clearAppointmentAlert();
+                    if (nameDisplay) {
+                        nameDisplay.value = "";
+                        nameDisplay.classList.remove("text-danger");
+                    }
+                    return;
+                } else {
+                    showHNError(false);
+                }
 
-                const radios = modal.querySelectorAll(
-                    'input[name="appointment_time"]'
-                );
-                radios.forEach((radio) => {
-                    radio.disabled = !data.name;
-                });
-            } catch (err) {
-                console.log("เกิดข้อผิดพลาดในการดึงข้อมูล:", err);
-                nameDisplay.value = "โหลดข้อมูลผิดพลาด";
-                clearAppointmentAlert();
+                // แสดง loading state
+                if (nameDisplay) {
+                    nameDisplay.value = "กำลังโหลด...";
+                    nameDisplay.classList.remove("text-danger");
+                }
+
+                try {
+                    // เช็คชื่อผู้ป่วยก่อน
+                    const res = await fetch(
+                        `/api/patient-name?hn=${encodeURIComponent(hn)}`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content") || ''
+                            }
+                        }
+                    );
+
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                    }
+
+                    const data = await res.json();
+
+                    if (data.name && nameDisplay) {
+                        nameDisplay.value = data.name;
+                        nameDisplay.classList.remove("text-danger");
+                        if (extraFields) extraFields.style.display = "none";
+                        
+                        enableAppointmentFields(modal);
+
+                        // เช็คประวัติการนัดหลังจากพบชื่อ
+                        await checkAppointmentHistory("in", hn);
+                    } else {
+                        if (nameDisplay) {
+                            nameDisplay.value = "ไม่พบข้อมูล";
+                            nameDisplay.classList.add("text-danger");
+                        }
+                        if (extraFields) extraFields.style.display = "block";
+                        disableAppointmentFields(modal);
+                        clearAppointmentAlert();
+                    }
+
+                } catch (err) {
+                    console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", err);
+                    if (nameDisplay) {
+                        nameDisplay.value = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+                        nameDisplay.classList.add("text-danger");
+                    }
+                    disableAppointmentFields(modal);
+                    clearAppointmentAlert();
+                    
+                    // แสดง error alert
+                    showAppointmentAlert(
+                        "ไม่สามารถเชื่อมต่อกับระบบได้ กรุณาลองใหม่อีกครั้ง", 
+                        "danger"
+                    );
+                }
+            }
+
+            // เมื่อพิมพ์ชื่อหรือนามสกุล
+            if (["fname", "lname"].includes(target.id)) {
+                const fname = modal.querySelector("#fname")?.value.trim();
+                const lname = modal.querySelector("#lname")?.value.trim();
+
+                const shouldEnable = fname && lname;
+
+                if (shouldEnable) {
+                    enableAppointmentFields(modal);
+                    
+                    // เช็คว่าเป็นผู้ป่วยนอกหรือไม่ก่อนเช็คประวัติ
+                    const resourceRadio = modal.querySelector('input[name="resource"]:checked');
+                    if (resourceRadio && resourceRadio.value === "out") {
+                        // เช็คประวัติการนัดเมื่อกรอกครบชื่อ-นามสกุลสำหรับผู้ป่วยนอก
+                        await checkAppointmentHistory("out", null, fname, lname);
+                    }
+                } else {
+                    disableAppointmentFields(modal);
+                    clearAppointmentAlert();
+                }
             }
         }
+    });
 
-        // ชื่อ-นามสกุล
-        if (["fname", "lname"].includes(target.id)) {
-            const fname = modal.querySelector("#fname")?.value.trim();
-            const lname = modal.querySelector("#lname")?.value.trim();
-            const shouldEnable = fname && lname;
+// ฟังก์ชันสำหรับปิดใช้งานฟิลด์การนัด
+function disableAppointmentFields(modal) {
+    if (!modal) return;
+    
+    const fieldsToToggle = [
+        "tel",
+        "wardSelect", 
+        "doctorSelect",
+        "appointmentDate",
+        "note",
+    ];
+    
+    fieldsToToggle.forEach((id) => {
+        const el = modal.querySelector(`#${id}`);
+        if (el) el.disabled = true;
+    });
 
-            const fieldsToToggle = [
-                "tel",
-                "wardSelect",
-                "doctorSelect",
-                "appointmentDate",
-                "note",
-            ];
-            fieldsToToggle.forEach((id) => {
-                const el = modal.querySelector(`#${id}`);
-                if (el) el.disabled = !shouldEnable;
-            });
+    // จัดการ radio แยก
+    const radios = modal.querySelectorAll('input[name="appointment_time"]');
+    radios.forEach((radio) => {
+        radio.disabled = true;
+    });
 
-            const radios = modal.querySelectorAll(
-                'input[name="appointment_time"]'
-            );
-            radios.forEach((radio) => {
-                radio.disabled = !shouldEnable;
-            });
+    // ปิดใช้งาน custom time input ด้วย
+    const customTimeInputs = modal.querySelectorAll(
+        "#custom_start_time, #custom_end_time"
+    );
+    customTimeInputs.forEach((input) => {
+        input.disabled = true;
+    });
+}
 
-            const customTimeInputs = modal.querySelectorAll(
-                "#custom_start_time, #custom_end_time"
-            );
-            customTimeInputs.forEach((input) => {
-                input.disabled = !shouldEnable;
-            });
+// ฟังก์ชันสำหรับเปิดใช้งานฟิลด์การนัด
+function enableAppointmentFields(modal) {
+    if (!modal) return;
+    
+    const fieldsToToggle = [
+        "tel",
+        "wardSelect",
+        "doctorSelect", 
+        "appointmentDate",
+        "note",
+    ];
+    
+    fieldsToToggle.forEach((id) => {
+        const el = modal.querySelector(`#${id}`);
+        if (el) el.disabled = false;
+    });
 
-            if (shouldEnable) {
-                await checkAppointmentHistory("out", null, fname, lname);
-            } else {
-                clearAppointmentAlert();
-            }
-        }
-    }, 400)
-); // debounce 400ms
+    // เปิดใช้งาน radio
+    const radios = modal.querySelectorAll('input[name="appointment_time"]');
+    radios.forEach((radio) => {
+        radio.disabled = false;
+    });
+
+    // เปิดใช้งาน custom time input ด้วย
+    const customTimeInputs = modal.querySelectorAll(
+        "#custom_start_time, #custom_end_time"
+    );
+    customTimeInputs.forEach((input) => {
+        input.disabled = false;
+    });
+}
 
 // ฟังก์ชันเช็คประวัติการนัด
 async function checkAppointmentHistory(
@@ -187,120 +268,207 @@ async function checkAppointmentHistory(
     fname = null,
     lname = null
 ) {
-    // ป้องกันข้อมูลไม่ครบ
-    if (
-        (resource === "in" && (!hn || hn.trim() === "")) ||
-        (resource === "out" &&
-            (!fname || fname.trim() === "" || !lname || lname.trim() === ""))
-    ) {
-        console.log("ข้อมูลไม่ครบ ไม่ส่ง request");
-        clearAppointmentAlert(); // เคลียร์ alert ด้วย
+    // Validate input parameters
+    if (!resource || (resource !== "in" && resource !== "out")) {
+        console.error("Invalid resource parameter:", resource);
+        return;
+    }
+
+    // ตรวจสอบว่ามี modal ที่เปิดอยู่หรือไม่
+    const modal = document.querySelector(".modal.show");
+    if (!modal) {
+        console.error("No active modal found");
         return;
     }
 
     let checkData = { resource: resource };
 
-    if (resource === "in" && hn) {
-        checkData.hn = hn;
-    } else if (resource === "out" && fname && lname) {
-        checkData.fname = fname;
-        checkData.lname = lname;
-    } else {
-        console.log("Missing required data for appointment check");
-        return;
+    if (resource === "in") {
+        if (!hn || hn.trim() === "") {
+            console.error("HN is required for 'in' resource");
+            return;
+        }
+        checkData.hn = hn.trim();
+    } else if (resource === "out") {
+        if (!fname || !lname || fname.trim() === "" || lname.trim() === "") {
+            console.error("First name and last name are required for 'out' resource");
+            return;
+        }
+        checkData.fname = fname.trim();
+        checkData.lname = lname.trim();
     }
 
-    console.log("Sending data:", checkData);
+    console.log("Checking appointment history with data:", checkData);
 
     try {
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content");
+            
+        if (!csrfToken) {
+            console.error("CSRF token not found");
+            showAppointmentAlert("ไม่พบ CSRF token กรุณาโหลดหน้าใหม่", "danger");
+            return;
+        }
+
         const response = await fetch(
             `${window.location.origin}/check-appointment-history`,
             {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
-                    Accept: "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                    "Accept": "application/json",
                 },
                 body: JSON.stringify(checkData),
             }
         );
 
         console.log("Response status:", response.status);
-        console.log("Response headers:", response.headers);
+        console.log("Response ok:", response.ok);
 
-        // แสดง response text ก่อนแปลง JSON
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("HTTP error response:", errorText);
+            
+            // แสดง error message ที่เป็นมิตรกับผู้ใช้
+            let errorMessage = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
+            if (response.status === 404) {
+                errorMessage = "ไม่พบ API endpoint";
+            } else if (response.status === 422) {
+                errorMessage = "ข้อมูลที่ส่งไม่ถูกต้อง";
+            } else if (response.status === 500) {
+                errorMessage = "เกิดข้อผิดพลาดในระบบ";
+            }
+            
+            showAppointmentAlert(errorMessage, "danger");
+            return;
+        }
+
+        // ดึง response text ก่อน
         const responseText = await response.text();
         console.log("Raw response:", responseText);
 
-        // เช็ค response status ก่อน
-        if (!response.ok) {
-            throw new Error(
-                `HTTP error! status: ${response.status}, body: ${responseText}`
-            );
+        // ตรวจสอบว่า response เป็น JSON หรือไม่
+        if (!responseText.trim()) {
+            console.error("Empty response from server");
+            showAppointmentAlert("ไม่ได้รับข้อมูลจากระบบ", "danger");
+            return;
         }
 
-        // พยายามแปลง JSON
         let data;
         try {
             data = JSON.parse(responseText);
         } catch (jsonError) {
             console.error("JSON parse error:", jsonError);
-            throw new Error("Invalid JSON response from server");
+            console.error("Response text:", responseText);
+            showAppointmentAlert("ข้อมูลที่ได้รับจากระบบไม่ถูกต้อง", "danger");
+            return;
         }
 
-        console.log("Parsed data:", data);
+        console.log("Parsed appointment data:", data);
+        
+        // เคลียร์ alert เก่าก่อน
         clearAppointmentAlert();
 
-        if (data.status === "found") {
-            showAppointmentAlert(data.message, "warning");
-        } else if (data.status === "no_history") {
-            showAppointmentAlert("ไม่พบประวัติการนัดหมายก่อนหน้า", "info");
-        } else if (data.status === "not_found") {
-            showAppointmentAlert(data.message, "danger");
-        } else if (data.status === "error") {
-            showAppointmentAlert(data.message, "danger");
+        // แสดงผลตามสถานะ
+        switch (data.status) {
+            case "found":
+                showAppointmentAlert(data.message || "พบประวัติการนัดหมาย", "warning");
+                break;
+            case "no_history":
+                showAppointmentAlert("ไม่พบประวัติการนัดหมายก่อนหน้า", "info");
+                break;
+            case "not_found":
+                showAppointmentAlert(data.message || "ไม่พบข้อมูลผู้ป่วย", "info");
+                break;
+            case "error":
+                showAppointmentAlert(data.message || "เกิดข้อผิดพลาดในการค้นหา", "danger");
+                break;
+            default:
+                console.warn("Unknown status:", data.status);
+                showAppointmentAlert("ได้รับข้อมูลที่ไม่คาดคิด", "warning");
         }
+
     } catch (error) {
-        console.error("Full error details:", error);
-        showAppointmentAlert(
-            "เกิดข้อผิดพลาดในการตรวจสอบข้อมูล: " + error.message,
-            "danger"
-        );
+        console.error("Appointment check error:", error);
+        clearAppointmentAlert();
+        
+        // แสดง error message ที่เป็นมิตรกับผู้ใช้
+        let errorMessage = "เกิดข้อผิดพลาดในการตรวจสอบข้อมูล";
+        if (error.message.includes("Failed to fetch")) {
+            errorMessage = "ไม่สามารถเชื่อมต่อกับระบบได้";
+        } else if (error.message.includes("NetworkError")) {
+            errorMessage = "เกิดปัญหาการเชื่อมต่อเครือข่าย";
+        }
+        
+        showAppointmentAlert(errorMessage, "danger");
     }
 }
 
-function showAppointmentAlert(message, type) {
+function showAppointmentAlert(message, type = "info") {
+    // Validate parameters
+    if (!message) {
+        console.error("Message is required for alert");
+        return;
+    }
+    
+    if (!["success", "info", "warning", "danger"].includes(type)) {
+        console.warn("Invalid alert type, using 'info' as default");
+        type = "info";
+    }
+
+    // เคลียร์ alert เก่าก่อน
+    clearAppointmentAlert();
+
     const alertHtml = `
         <div class="alert alert-${type} alert-dismissible fade show mt-2" role="alert" id="appointment-alert">
             <i class="fas fa-info-circle me-2"></i>
             ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
 
     // หา modal ที่เปิดอยู่
     const modal = document.querySelector(".modal.show");
-    if (modal) {
-        // หาจุดที่เหมาะสมในการแสดง alert
-        const resource = modal.querySelector('input[name="resource"]:checked');
-        let targetElement;
+    if (!modal) {
+        console.warn("No active modal found for alert display");
+        return;
+    }
 
-        if (resource && resource.value === "in") {
-            targetElement =
-                modal.querySelector("#hn-group") ||
-                modal.querySelector("#hn").parentElement;
-        } else {
-            targetElement =
-                modal.querySelector("#hospital-group") ||
-                modal.querySelector("#fname").parentElement;
-        }
+    // หาจุดที่เหมาะสมในการแสดง alert
+    const resourceRadio = modal.querySelector('input[name="resource"]:checked');
+    let targetElement;
 
-        if (targetElement) {
-            targetElement.insertAdjacentHTML("afterend", alertHtml);
+    if (resourceRadio && resourceRadio.value === "in") {
+        targetElement = modal.querySelector("#hn-group") || 
+                       modal.querySelector("#hn")?.parentElement;
+    } else {
+        targetElement = modal.querySelector("#hospital-group") || 
+                       modal.querySelector("#fname")?.parentElement ||
+                       modal.querySelector("#lname")?.parentElement;
+    }
+
+    // ถ้าหาไม่เจอ ให้หาจุดทั่วไปในฟอร์ม
+    if (!targetElement) {
+        targetElement = modal.querySelector(".modal-body") || modal;
+    }
+
+    if (targetElement) {
+        targetElement.insertAdjacentHTML("afterend", alertHtml);
+        
+        // Auto-dismiss info alerts after 5 seconds
+        if (type === "info") {
+            setTimeout(() => {
+                const alert = document.getElementById("appointment-alert");
+                if (alert) {
+                    alert.classList.remove("show");
+                    setTimeout(() => alert.remove(), 150);
+                }
+            }, 5000);
         }
+    } else {
+        console.error("Could not find target element for alert");
     }
 }
 
@@ -322,14 +490,58 @@ function showHNError(show) {
     }
 }
 
-// ป้องกันยิง API ถี่เกินไป
+// เพิ่มฟังก์ชันสำหรับ debounce เพื่อป้องกันการเรียก API บ่อยเกินไป
 function debounce(func, wait) {
     let timeout;
-    return function (...args) {
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
         clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
+        timeout = setTimeout(later, wait);
     };
 }
+
+// Event listener สำหรับ input events (นอกเหนือจาก Enter key)
+document.getElementById("main-content").addEventListener("input", debounce(async function(e) {
+    const target = e.target;
+    const modal = target.closest(".modal");
+    if (!modal) return;
+
+    // Handle real-time validation for fname/lname
+    if (["fname", "lname"].includes(target.id)) {
+        const fname = modal.querySelector("#fname")?.value.trim();
+        const lname = modal.querySelector("#lname")?.value.trim();
+        
+        if (fname && lname && fname.length >= 2 && lname.length >= 2) {
+            enableAppointmentFields(modal);
+            
+            // เช็คว่าเป็นผู้ป่วยนอกหรือไม่ก่อนเช็คประวัติ
+            const resourceRadio = modal.querySelector('input[name="resource"]:checked');
+            if (resourceRadio && resourceRadio.value === "out") {
+                // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
+                await checkAppointmentHistory("out", null, fname, lname);
+            }
+        } else {
+            disableAppointmentFields(modal);
+            clearAppointmentAlert();
+        }
+    }
+}, 300)); // Debounce for 300ms
+
+// เพิ่ม event listener เพื่อป้องกัน form submission เมื่อกด Enter
+document.getElementById("main-content").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+        const target = e.target;
+        const modal = target.closest(".modal");
+        
+        if (modal && ["hn", "fname", "lname", "tel"].includes(target.id)) {
+            e.preventDefault();
+            return false;
+        }
+    }
+});
 
 // ปุ้มอัพเดตนัด
 document.addEventListener("click", function (e) {

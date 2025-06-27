@@ -172,7 +172,7 @@
 
                                             <!-- Modal Body -->
                                             <div class="modal-body">
-                                                <div class="d-flex justify-content-between align-items-center my-2">
+                                                <div class="d-flex justify-content-end align-items-center gap-2 my-2">
                                                     <button type="button" class="btn btn-info print-btn"
                                                         data-id="{{ $item->a_id }}">
                                                         <i class="fas fa-print me-1"></i>พิมพ์ PDF

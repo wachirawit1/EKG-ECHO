@@ -29,7 +29,7 @@
     <script scr="{{ asset('js/appointCheck.js') }}"></script>
     <script src="{{ asset('js/search.js') }}"></script>
     <script src="{{ asset('js/cursor.js') }}"></script>
-    <script src="{{ asset('js/printer.js')}}"></script>
+    <script src="{{ asset('js/printer.js') }}"></script>
     <script>
         // เรียกฟังก์ชันทันทีตอนโหลดหน้า (สำหรับตั้งค่าครั้งแรก)
         document.addEventListener("DOMContentLoaded", function() {
@@ -48,7 +48,7 @@
                 console.log('Print button clicked'); // debug
                 const patientId = $(this).data('id');
                 console.log('Patient ID:', patientId); // debug
-                showPDFPreview(patientId);
+                generatePDFInNewTab(patientId);
             });
 
             $(document).on('click', '.download-pdf-btn', function() {

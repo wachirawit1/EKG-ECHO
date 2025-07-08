@@ -3,7 +3,7 @@ function setCursorWait() {
     style.id = 'global-wait-cursor';
     style.innerHTML = `
 * {
-    cursor: progress !important;
+    cursor: wait !important;
 }
 `;
     document.head.appendChild(style);

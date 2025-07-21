@@ -103,8 +103,6 @@
         .select2-container--default.select2-container--disabled .select2-selection--single {
             background-color: #e9ecef;
             /* พื้นหลังเทาแบบ Bootstrap */
-            cursor: not-allowed;
-            /* เคอร์เซอร์เปลี่ยนเป็นห้ามคลิก */
             opacity: 1;
             /* ป้องกัน select2 ทำให้จางเกินไป */
             border: 1px solid #ced4da;
@@ -280,6 +278,11 @@
                     <li class="nav-item">
                         <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
                             aria-current="page" href="/">หน้าแรก</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link  {{ Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
+                            aria-current="page" href="{{ route('report.show')}}">รายงาน</a>
                     </li>
 
                     <li class="nav-item dropdown">

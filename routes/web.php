@@ -42,11 +42,10 @@ Route::get('/api/patient-name', [MainController::class, 'getPatientName']);
 // routes/api.php
 Route::get('/api/search-doctors', [AppointmentController::class, 'searchDoctors']);
 
-// เพิ่มคนไข้ใหม่
-Route::POST('/patient/add', [MainController::class, 'addPatient'])->name('patient.add');
-
-Route::get('/test' , [TestController::class, 'renderView'] );
+Route::get('/test', [TestController::class, 'renderView']);
 
 // Route หลัก
-Route::post('/check-appointment-history', [AppointmentController::class, 'checkAppointmentHistory'])
-    ->name('appointment.checkHistory');
+Route::post('/check-appointment-history', [AppointmentController::class, 'checkAppointmentHistory'])->name('appointment.checkHistory');
+
+// Route สำหรับแสดงรายงาน
+Route::get('/report', [MainController::class, 'showReport'])->name('report.show');

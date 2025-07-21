@@ -136,6 +136,27 @@ class MainController extends Controller
                return trim($item->ward_id); // trim ทั้งซ้ายและขวา
             });
 
+         // ทำ drop down โรงพยาบาล
+         $hospcode = [];
+
+         $buriram = DB::connection('sqlsrv')
+            ->table('HOSPCODE')
+            ->where('CHANGWAT', '31') // 31 = บุรีรัมย์
+            ->where('OFF_NAME2', 'รพช.')
+            ->orderBy('OFF_ID')
+            ->get()
+            ->toArray();
+
+         $korat = DB::connection('sqlsrv')
+            ->table('HOSPCODE')
+            ->whereIn('OFF_ID', ['11602', '11608'])
+            ->orderBy('OFF_ID')
+            ->get()
+            ->toArray();
+
+         // รวมผลลัพธ์และ map
+         $hospcode = array_merge($buriram, $korat);
+
          // ทำ drop down หมอ
          $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
          $doc = DB::connection('sqlsrv')
@@ -237,17 +258,11 @@ class MainController extends Controller
             ->orderBy('ward_name', 'asc')
             ->get();
 
-
-
-
-
-
          // map ช้อมูลผู้ป่วยเข้ากับ appointment
          $appointments->transform(function ($item) use ($patients, $doctors, $depts, $wards) {
             $hn = str_pad(trim($item->hn), 7, ' ', STR_PAD_LEFT);
             $patient = $patients[$hn] ?? null;
             $doctor = $doctors[$item->doc_id] ?? null;
-
 
             // ชื่อผู้ป่วย
             $item->patient_name = (trim($patient?->titleName) ?? ' ') . ' ' . ($patient?->firstName ?? ' ') . ' ' . ($patient?->lastName ?? ' ');
@@ -260,8 +275,8 @@ class MainController extends Controller
                   ->first();
 
                if ($mysqlPatient) {
+                  $item->hospital_name = 'รพช. ' . ($mysqlPatient->hospital_name ?? '');
                   $item->patient_name =  ($mysqlPatient->title_name ?? '') . ' ' . ($mysqlPatient->fname ?? '') . ' ' . ($mysqlPatient->lname ?? '');
-                  $item->hospital_name = $mysqlPatient->hospital_name ?? '';
                }
             }
 
@@ -366,7 +381,7 @@ class MainController extends Controller
          $startNum = ($page - 1) * $perPage + 1;
          $endNum = min($total, $page * $perPage);
 
-         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'dept_list', 'ward_list', 'total', 'startNum', 'endNum'));
+         return view('fragments.appointments', compact('appointments', 'totalPages', 'page', 'perPage', 'doc', 'hospcode', 'dept_list', 'ward_list', 'total', 'startNum', 'endNum'));
       }
 
       // ตัวอย่างหน้า 2
@@ -549,7 +564,7 @@ class MainController extends Controller
             ->orderBy('ward_name', 'asc')
             ->get();
 
-         // map ช้อมूลผู้ป่วยเข้ากับ treatment
+         // map ช้อมูลผู้ป่วยเข้ากับ treatment
          $treatments->transform(function ($item) use ($patients, $depts, $wards) {
             $hn = str_pad(trim($item->hn), 7, ' ', STR_PAD_LEFT);
             $patient = $patients[$hn] ?? null;
@@ -834,5 +849,23 @@ class MainController extends Controller
          'name' => $name,
          'found' => $found,
       ]);
+   }
+   public function showReport()
+   {
+      $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
+      $today = Carbon::now();
+      $todayThai = ($today->year + 543) . $today->format('md'); // ได้ 25680721
+
+      $appoint = DB::connection('sqlsrv')
+         ->table('Appoint')
+         ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
+         ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+         ->whereIn('doctor', $targetDoc)
+         ->where('appoint_date', '>=', $todayThai)
+         ->orderByDesc('Appoint.appoint_date')
+         ->limit(10000)
+         ->paginate(9);
+
+      return view('report', compact('appoint'));
    }
 }

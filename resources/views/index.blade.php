@@ -40,27 +40,40 @@
         // โหลดหน้าแรกเป็นตารางนัด
         loadPage('appointments');
 
-        $(document).ready(function() {
-            console.log('PDF Script loaded'); // สำหรับ debug
+        // Event Handlers
+        if (typeof $ !== "undefined") {
+            // jQuery version
+            $(document).ready(function() {
+                console.log("PDF Script loaded (jQuery)");
 
-            // ใช้ event delegation เพื่อให้ทำงานกับ modal ที่โหลดภายหลัง
-            $(document).on('click', '.print-btn', function() {
-                console.log('Print button clicked'); // debug
-                const patientId = $(this).data('id');
-                console.log('Patient ID:', patientId); // debug
-                generatePDFInNewTab(patientId);
+                $(document).on("click", ".print-btn", function() {
+                    console.log("Print button clicked");
+                    const patientId = $(this).data("id");
+                    console.log("Patient ID:", patientId);
+                    generatePDFInNewTab(patientId);
+                });
             });
+        } else {
+            // Vanilla JS version
+            document.addEventListener("DOMContentLoaded", function() {
+                console.log("PDF Script loaded (Vanilla JS)");
 
-            $(document).on('click', '.download-pdf-btn', function() {
-                const patientId = $(this).data('id');
-                generatePDF(patientId, true);
+                document.addEventListener("click", function(e) {
+                    if (
+                        e.target.classList.contains("print-btn") ||
+                        e.target.closest(".print-btn")
+                    ) {
+                        console.log("Print button clicked");
+                        const button = e.target.classList.contains("print-btn") ?
+                            e.target :
+                            e.target.closest(".print-btn");
+                        const patientId = button.dataset.id;
+                        console.log("Patient ID:", patientId);
+                        generatePDFInNewTab(patientId);
+                    }
+                });
             });
-
-            $(document).on('click', '.close-preview-btn', function() {
-                const patientId = $(this).data('id');
-                $(`#pdfPreview${patientId}`).hide();
-            });
-        });
+        }
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

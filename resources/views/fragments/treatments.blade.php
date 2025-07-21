@@ -46,23 +46,16 @@
         </div>
     </form>
 
-    <div class="btn-group">
         {{-- modal trigger --}}
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTreatment">
             <i class="bi bi-plus-circle"></i> เพิ่มการตรวจ EKG
         </button>
 
 
-        {{-- Add new patient --}}
-        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPatient">
-            <i class="bi bi-person-fill-add"></i> เพิ่มคนไข้นอก
-        </button>
-    </div>
-
+        @include('modal.treatadd')
+     
 </div>
 
-@include('modal.addpatient')
-@include('modal.treatadd')
 
 @if (request('hn') || (request('start_date') && request('end_date')))
     <div class="bg-light border rounded p-3 my-3 d-flex justify-content-between align-items-center flex-wrap">

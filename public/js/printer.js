@@ -290,38 +290,3 @@ function createPDFHTML(data) {
         </div>
     `;
 }
-
-// Event Handlers
-if (typeof $ !== "undefined") {
-    // jQuery version
-    $(document).ready(function () {
-        console.log("PDF Script loaded (jQuery)");
-
-        $(document).on("click", ".print-btn", function () {
-            console.log("Print button clicked");
-            const patientId = $(this).data("id");
-            console.log("Patient ID:", patientId);
-            generatePDFInNewTab(patientId);
-        });
-    });
-} else {
-    // Vanilla JS version
-    document.addEventListener("DOMContentLoaded", function () {
-        console.log("PDF Script loaded (Vanilla JS)");
-
-        document.addEventListener("click", function (e) {
-            if (
-                e.target.classList.contains("print-btn") ||
-                e.target.closest(".print-btn")
-            ) {
-                console.log("Print button clicked");
-                const button = e.target.classList.contains("print-btn")
-                    ? e.target
-                    : e.target.closest(".print-btn");
-                const patientId = button.dataset.id;
-                console.log("Patient ID:", patientId);
-                generatePDFInNewTab(patientId);
-            }
-        });
-    });
-}

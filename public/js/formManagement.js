@@ -77,12 +77,35 @@ document
             if (
                 target.id === "hn" ||
                 target.id === "fname" ||
-                target.id === "lname"
+                target.id === "lname" ||
+                target.tagName === "SELECT" || // เพิ่มการตรวจสอบ SELECT element
+                target.id === "titleName" 
             ) {
                 e.preventDefault();
                 e.stopPropagation();
             }
 
+            // เมื่อกด Enter ในช่องโรงพยาบาล - ให้ตรวจสอบข้อมูลและเปิดใช้งานช่องอื่น
+            if (target.id === "hospital_name") {
+                const fname = modal.querySelector("#fname")?.value.trim();
+                const lname = modal.querySelector("#lname")?.value.trim();
+                const hospitalName = target.value.trim();
+
+                // ตรวจสอบว่ามีข้อมูลครบหรือไม่
+                if (fname && lname && hospitalName) {
+                    enableAppointmentFields(modal);
+                    
+                    // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
+                    const resourceRadio = modal.querySelector(
+                        'input[name="resource"]:checked'
+                    );
+                    if (resourceRadio && resourceRadio.value === "out") {
+                        await checkAppointmentHistory("out", null, fname, lname);
+                    }
+                }
+                return;
+            }
+            
             const hnInput = modal.querySelector("#hn");
             const nameDisplay = modal.querySelector("#hn_name_display");
             const extraFields = modal.querySelector("#extra-patient-fields");
@@ -410,6 +433,7 @@ async function checkAppointmentHistory(
                 );
                 break;
             case "error":
+                disableAppointmentFields(modal);
                 showAppointmentAlert(
                     data.message || "เกิดข้อผิดพลาดในการค้นหา",
                     "danger"
@@ -582,16 +606,16 @@ document.getElementById("main-content").addEventListener(
 
             // ตรวจสอบว่าทั้งสองช่องมีข้อมูลและยาวพอ
             if (fname && lname && fname.length >= 2 && lname.length >= 2) {
-                enableAppointmentFields(modal);
+                // enableAppointmentFields(modal);
 
                 // เช็คว่าเป็นผู้ป่วยนอกหรือไม่ก่อนเช็คประวัติ
                 const resourceRadio = modal.querySelector(
                     'input[name="resource"]:checked'
                 );
-                if (resourceRadio && resourceRadio.value === "out") {
-                    // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
-                    await checkAppointmentHistory("out", null, fname, lname);
-                }
+                // if (resourceRadio && resourceRadio.value === "out") {
+                //     // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
+                //     await checkAppointmentHistory("out", null, fname, lname);
+                // }
             } else {
                 // ถ้าข้อมูลไม่ครบหรือสั้นเกินไป ให้ล็อคช่อง
                 disableAppointmentFields(modal);

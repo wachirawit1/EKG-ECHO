@@ -67,75 +67,7 @@ class AppointmentController extends Controller
         return strtoupper($abbr);
     }
 
-
     // เพิ่มนัด
-    // public function addAppointment(Request $request)
-    // {
-    //     $hn = $request->input('hn');
-
-
-    //     if ($request->resource === "in") {
-    //         // ผู้ป่วยใน
-    //         $hn = str_pad(trim(preg_replace('/\s+/', '', $hn)), 7, ' ', STR_PAD_LEFT);
-    //     } else {
-    //         // ผูป่วยนอก
-    //         $fname = $request->input('fname');
-    //         $lname = $request->input('lname');
-
-    //         // เช็คว่าคนไข้มีอยู่แล้วไหม
-    //         $existing = DB::connection('mysql')
-    //             ->table('patient')
-    //             ->where('fname', $fname)
-    //             ->where('lname', $lname)
-    //             ->first();
-
-    //         if (!$existing) {
-
-    //             return redirect()->back()->with('message', [
-    //                 'status' => 0,
-    //                 'title' => 'ไม่พบผู้ป่วย',
-    //                 'message' => "ไม่พบผู้ป่วยชื่อ $fname $lname ในระบบ"
-    //             ]);
-    //         }
-    //         $hn = $existing->hn;
-    //     }
-
-    //     $appointmentTime = $request->input('appointment_time');
-
-    //     if ($appointmentTime === 'custom') {
-    //         $start = $request->input('custom_start_time');
-    //         $end = $request->input('custom_end_time');
-
-    //         if ($start && $end) {
-    //             $appointmentTime = "$start-$end";
-    //         } else {
-    //             return;
-    //         }
-    //     }
-
-
-    //     $ward = str_pad(trim($request->input('ward')), 11, ' ', STR_PAD_RIGHT);
-
-    //     $note = $request->filled('note') ? $request->note : '-';
-
-
-    //     $insert = DB::table('appointment')->insert([
-    //         'hn' => $hn,
-    //         'tel' => $request->tel,
-    //         'ward' => $ward,
-    //         'doc_id' => $request->docID,
-    //         'a_date' => $request->appointmentDate,
-    //         'a_time' => $appointmentTime,
-    //         'note' => $note
-    //         // 'added_by' => $request->added_by
-    //     ]);
-
-    //     $message = $insert
-    //         ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มสำเร็จ']
-    //         : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'เพิ่มไม่สำเร็จ'];
-
-    //     return redirect()->back()->with('message', $message);
-    // }
     // อัพเดท addAppointment method เพื่อเพิ่มการเช็คซ้ำก่อนบันทึก
     public function addAppointment(Request $request)
     {
@@ -146,22 +78,40 @@ class AppointmentController extends Controller
         } else {
             $fname = $request->input('fname');
             $lname = $request->input('lname');
+            $titleName = $request->input('titleName');
+            $hospitalName = $request->input('hospital_name');
+
+            // ตรวจสอบว่ามีผู้ป่วยอยู่แล้วหรือไม่
             $existing = DB::connection('mysql')
                 ->table('patient')
                 ->where('fname', $fname)
                 ->where('lname', $lname)
                 ->first();
-            if (!$existing) {
-                return redirect()->back()->with('message', [
-                    'status' => 0,
-                    'title' => 'ไม่พบผู้ป่วย',
-                    'message' => "ไม่พบผู้ป่วยชื่อ $fname $lname ในระบบ"
+
+            if ($existing) {
+                $hn = $existing->hn;
+            } else {
+                // สร้าง HN ใหม่สำหรับผู้ป่วยนอก
+                $lastPatient = DB::connection('mysql')
+                    ->table('patient')
+                    ->orderBy('hn', 'desc')
+                    ->first();
+
+                $newHnNumber = $lastPatient ? (int)trim($lastPatient->hn) + 1 : 1;
+                $hn = str_pad($newHnNumber, 7, '0', STR_PAD_LEFT);
+
+                // เพิ่มผู้ป่วยใหม่
+                DB::connection('mysql')->table('patient')->insert([
+                    'hn' => $hn,
+                    'fname' => $fname,
+                    'lname' => $lname,
+                    'title_name' => $titleName,
+                    'hospital_name' => $hospitalName,
                 ]);
             }
-            $hn = $existing->hn;
         }
 
-        // เช็คการนัดในวันเดียวกัน (ป้องกันการนัดซ้ำ)
+        // เช็คการนัดซ้ำ
         $existingToday = DB::table('appointment')
             ->where('hn', $hn)
             ->where('a_date', $request->appointmentDate)
@@ -179,15 +129,7 @@ class AppointmentController extends Controller
         if ($appointmentTime === 'custom') {
             $start = $request->input('custom_start_time');
             $end = $request->input('custom_end_time');
-            if ($start && $end) {
-                $appointmentTime = "$start-$end";
-            } else {
-                return redirect()->back()->with('message', [
-                    'status' => 0,
-                    'title' => 'ข้อมูลไม่ครบ',
-                    'message' => 'กรุณาระบุเวลาเริ่มต้นและสิ้นสุด'
-                ]);
-            }
+            $appointmentTime = "$start-$end";
         }
 
         $ward = str_pad(trim($request->input('ward')), 11, ' ', STR_PAD_RIGHT);
@@ -204,67 +146,10 @@ class AppointmentController extends Controller
         ]);
 
         $message = $insert
-            ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มสำเร็จ']
-            : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'เพิ่มไม่สำเร็จ'];
+            ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มการนัดหมายสำเร็จ']
+            : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'เกิดข้อผิดพลาดในการเพิ่มข้อมูล'];
 
         return redirect()->back()->with('message', $message);
-    }
-
-    // ลบนัด
-    public function deleteAppointment($a_id)
-    {
-
-        $delete = DB::table('appointment')->where('a_id', $a_id)->delete();
-        $message = [];
-        if ($delete) {
-            $message = [
-                'status' => 1,
-                'title' => 'ลบสำเร็จ',
-                'message' => 'ลบสำเร็จ'
-            ];
-        } else {
-            $message = [
-                'status' => 1,
-                'title' => 'ลบสำเร็จ',
-                'message' => 'ลบสำเร็จ'
-            ];
-        }
-        return redirect()->back()->with('message', $message);
-    }
-
-    // แก้ไขนัด
-    public function updateAppointment(Request $request, $id)
-    {
-        $a_time = $request->input('a_time_start') . '-' . $request->input('a_time_end');
-        $updated = DB::connection('mysql')
-            ->table('appointment')
-            ->where('a_id', $id)
-            ->update([
-                'a_date' => $request->input('a_date'),
-                'a_time' => $a_time,
-                'tel' => $request->input('tel'),
-                'note' => $request->input('note'),
-            ]);
-
-        if ($updated) {
-            return response()->json(['success' => true]);
-        } else {
-            return response()->json(['success' => false, 'message' => 'อัปเดตไม่สำเร็จ']);
-        }
-    }
-
-    public function searchDoctors(Request $request)
-    {
-        $q = $request->get('q');
-
-        $results = DB::connection('sqlsrv')
-            ->table('DOCC')
-            ->select('docCode', 'docName', 'doctitle')
-            ->where('docCode', 'like', "%$q%")
-            ->orWhere('docName', 'like', "%$q%")
-            ->get();
-
-        return response()->json($results);
     }
 
     // เช็คประวัติการนัดล่าสุด
@@ -333,7 +218,7 @@ class AppointmentController extends Controller
                 if (!$existing) {
                     return response()->json([
                         'status' => 'not_found',
-                        'message' => "ไม่พบผู้ป่วยชื่อ {$fname} {$lname} ในระบบ"
+                        'message' => "ไม่ไม่เคยมีประวัติผู้ป่วยชื่อ {$fname} {$lname} ในระบบ"
                     ]);
                 }
                 $hn = $existing->hn;

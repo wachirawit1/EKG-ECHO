@@ -64,20 +64,15 @@
 
     </form>
 
-    <div class="btn-group">
         <!-- Add Appointment Modal -->
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAppointment">
             <i class="bi bi-plus-circle"></i> เพิ่มนัดหมาย
         </button>
 
-        {{-- Add new patient --}}
-        <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#addPatient">
-            <i class="bi bi-person-fill-add"></i> เพิ่มคนไข้นอก
-        </button>
 
-    </div>
+
     @include('modal.appadd')
-    @include('modal.addpatient')
+
 
 
 
@@ -185,12 +180,12 @@
                                                 <!-- Patient Info Form -->
                                                 <form id="patientInfoForm{{ $item->a_id }}">
                                                     <div class="row">
-                                                        <div class="col mb-3">
+                                                        <div class="col-8 mb-3">
                                                             <label for="hn{{ $item->a_id }}"
                                                                 class="form-label fw-bold">HN</label>
                                                             <input type="text" class="form-control"
                                                                 id="hn{{ $item->a_id }}" name="hn"
-                                                                value="{{ trim($item->hn) . ' - ' . $item->patient_name }}"
+                                                                value="{{ trim($item->hn) . ' - ' . $item->patient_name . ' - ' . $item->hospital_name }}"
                                                                 readonly>
                                                         </div>
 

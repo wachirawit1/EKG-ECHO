@@ -185,6 +185,8 @@ function setupAppointmentValidation() {
             const ward = form.querySelector('[name="ward"]')?.value || '';
             const fname = form.querySelector('[name="fname"]')?.value.trim() || '';
             const lname = form.querySelector('[name="lname"]')?.value.trim() || '';
+            const hospitalName = form.querySelector('[name="hospital_name"]')?.value.trim();
+            const titleName = form.querySelector('[name="titleName"]')?.value.trim();
             const timeOption = form.querySelector('input[name="appointment_time"]:checked')
                 ?.value || '';
             let errors = [];
@@ -203,8 +205,10 @@ function setupAppointmentValidation() {
 
             // validate ชื่อ-นามสกุล (เฉพาะผู้ป่วยนอก)
             if (resource === 'out') {
-                if (!fname) errors.push('กรุณากรอกชื่อผู้ป่วยนอก');
-                if (!lname) errors.push('กรุณากรอกนามสกุลผู้ป่วยนอก');
+                if(!titleName) errors.push('กรุณากรอกคำนำหน้า');
+                if (!fname) errors.push('กรุณากรอกชื่อ');
+                if (!lname) errors.push('กรุณากรอกนามสกุล');
+                if (!hospitalName) errors.push('กรุณาเลือกโรงพยาบาล');
             }
 
             // validate เบอร์โทรศัพท์

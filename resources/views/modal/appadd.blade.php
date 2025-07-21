@@ -48,15 +48,31 @@
                     <div class="mb-3" id="hospital-group" style="display: none;">
 
                         <div class="row mb-3">
+                            <div class="col-2">
+                                <label for="titleName" class="form-label">คำนำหน้า</label>
+                                <select class="form-select" name="titleName" id="titleName">
+                                    <option value="">เลือก</option>
+                                    <option value="นาย">นาย</option>
+                                    <option value="นาง">นาง</option>
+                                    <option value="นางสาว">นางสาว</option>
+                                </select>
+                            </div>
                             <div class="col">
                                 <label for="fname" class="form-label">ชื่อ</label>
-                                <input type="text" class="form-control " id="fname" name="fname"
-                                    placeholder="กรอกชื่อ...">
+                                <input type="text" class="form-control " id="fname" name="fname" placeholder="กรอกชื่อ...">
                             </div>
                             <div class="col">
                                 <label for="lname" class="form-label">นามสกุล</label>
-                                <input type="text" class="form-control " id="lname" name="lname"
-                                    placeholder="กรอกนามสกุล...">
+                                <input type="text" class="form-control " id="lname" name="lname" placeholder="กรอกนามสกุล...">
+                            </div>
+                            <div class="col">
+                                <label for="hospital_name" class="form-label">โรงพยาบาล</label>
+                                <select type="text" class="form-select" id="hospital_name" name="hospital_name">
+                                    <option value="">เลือกโรงพยาบาล</option>
+                                    @foreach ($hospcode as $item)
+                                        <option value="{{ $item->OFF_NAME1 }}">{{ $item->OFF_NAME1 }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -78,12 +94,14 @@
                                 <option value="none">ไม่มี</option>
                                 <optgroup label="วอร์ด">
                                     @foreach ($ward_list as $item)
-                                        <option value="ward:{{ $item->ward_id }}">{{ $item->ward_id}} - {{$item->ward_name }}</option>
+                                        <option value="ward:{{ $item->ward_id }}">{{ $item->ward_id }} -
+                                            {{ $item->ward_name }}</option>
                                     @endforeach
                                 </optgroup>
                                 <optgroup label="แผนก">
                                     @foreach ($dept_list as $item)
-                                        <option value="dept:{{ $item->deptCode }}">{{ $item->deptCode}} - {{$item->deptDesc }}</option>
+                                        <option value="dept:{{ $item->deptCode }}">{{ $item->deptCode }} -
+                                            {{ $item->deptDesc }}</option>
                                     @endforeach
                                 </optgroup>
                             </select>
@@ -118,27 +136,22 @@
                         <!-- ตัวเลือก 1 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time1"
-                                value="10:00-10:30" disabled />
-                            <label class="form-check-label" for="time1">10:00 - 10:30</label>
+                                value="8:30-10:30" disabled />
+                            <label class="form-check-label" for="time1">08:30 - 10:30</label>
                         </div>
 
                         <!-- ตัวเลือก 2 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time2"
                                 value="11:00-11:30" disabled />
-                            <label class="form-check-label" for="time2">11:00 - 11:30</label>
+                            <label class="form-check-label" for="time2">10:30 - 11:30</label>
                         </div>
-
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="appointment_time" id="time2"
-                                value="13:00-13:30" disabled />
-                            <label class="form-check-label" for="time2">13:00 - 13:30</label>
-                        </div>
-
+                        
+                        <!-- ตัวเลือก 3 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time2"
                                 value="14:00-14:30" disabled />
-                            <label class="form-check-label" for="time2">14:00 - 14:30</label>
+                            <label class="form-check-label" for="time2">15:00 - 16:00</label>
                         </div>
 
                         <!-- ตัวเลือกกรอกเอง -->

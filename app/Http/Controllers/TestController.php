@@ -19,7 +19,7 @@ class TestController extends Controller
             ->table('Appoint')
             ->leftJoin('DOCC', 'Appoint.doctor', '=', 'DOCC.docCode')
             ->whereIn('Appoint.doctor', $targetDoc) 
-            ->where('Appoint.appoint_date', '=', $today)
+            // ->where('Appoint.appoint_date', '=', $today)
             ->orderBy('Appoint.appoint_date')
             ->paginate(10);
         return view('querytest', compact('appoint'));

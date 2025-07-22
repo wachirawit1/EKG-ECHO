@@ -367,4 +367,54 @@ class AppointmentController extends Controller
             ], 500);
         }
     }
+
+    // ลบนัด
+    public function deleteAppointment($a_id)
+    {
+        try {
+            $deleted = DB::table('appointment')->where('a_id', $a_id)->delete();
+
+            if ($deleted) {
+                return redirect()->back()->with('message', [
+                    'status' => 1,
+                    'title' => 'ลบสำเร็จ',
+                    'message' => 'ลบการนัดหมายสำเร็จ'
+                ]);
+            } else {
+                return redirect()->back()->with('message', [
+                    'status' => 0,
+                    'title' => 'ลบไม่สำเร็จ',
+                    'message' => 'ไม่พบการนัดหมายที่ต้องการลบ'
+                ]);
+            }
+        } catch (Exception $e) {
+            Log::error('Error deleting appointment: ' . $e->getMessage());
+            return redirect()->back()->with('message', [
+                'status' => 0,
+                'title' => 'เกิดข้อผิดพลาด',
+                'message' => 'ไม่สามารถลบการนัดหมายได้ กรุณาลองใหม่อีกครั้ง'
+            ]);
+        }
+    }
+    // แก้ไขนัด
+    public function updateAppointment(Request $request, $id)
+    {
+        $a_time = $request->input('a_time_start') . '-' . $request->input('a_time_end');
+        $updated = DB::connection('mysql')
+            ->table('appointment')
+            ->where('a_id', $id)
+            ->update([
+                'a_date' => $request->input('a_date'),
+                'a_time' => $a_time,
+                'tel' => $request->input('tel'),
+                'note' => $request->input('note'),
+            ]);
+
+
+        if ($updated) {
+            return response()->json(['success' => true, 'message' => 'อัพเดทนัดสำเร็จ']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'อัปเดตนัดไม่สำเร็จ']);
+        }
+    }
 }

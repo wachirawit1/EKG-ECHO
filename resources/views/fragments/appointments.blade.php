@@ -64,10 +64,10 @@
 
     </form>
 
-        <!-- Add Appointment Modal -->
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAppointment">
-            <i class="bi bi-plus-circle"></i> เพิ่มนัดหมาย
-        </button>
+    <!-- Add Appointment Modal -->
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAppointment">
+        <i class="bi bi-plus-circle"></i> เพิ่มนัดหมาย
+    </button>
 
 
 
@@ -185,7 +185,7 @@
                                                                 class="form-label fw-bold">HN</label>
                                                             <input type="text" class="form-control"
                                                                 id="hn{{ $item->a_id }}" name="hn"
-                                                                value="{{ trim($item->hn) . ' - ' . $item->patient_name . ' - ' . $item->hospital_name }}"
+                                                                value="{{ trim($item->hn) . ' - ' . $item->patient_name . ($item->hospital_name ?? '') }}"
                                                                 readonly>
                                                         </div>
 

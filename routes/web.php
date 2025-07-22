@@ -49,3 +49,7 @@ Route::post('/check-appointment-history', [AppointmentController::class, 'checkA
 
 // Route สำหรับแสดงรายงาน
 Route::get('/report', [MainController::class, 'showReport'])->name('report.show');
+
+Route::get('/login', function () {
+    return view('login');
+})->name('login');

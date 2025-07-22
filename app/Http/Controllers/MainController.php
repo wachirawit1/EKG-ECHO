@@ -46,7 +46,8 @@ class MainController extends Controller
             )
             ->when($request->filled('doc_id'), function ($query) use ($request) {
                $query->where('doc_id', $request->doc_id);
-            });
+            })
+            ->orderBy('a_date', 'ASC');
 
 
          $total = $mysqlQuery->count();
@@ -275,7 +276,7 @@ class MainController extends Controller
                   ->first();
 
                if ($mysqlPatient) {
-                  $item->hospital_name = 'รพช. ' . ($mysqlPatient->hospital_name ?? '');
+                  $item->hospital_name = ' - รพช. ' . ($mysqlPatient->hospital_name ?? '');
                   $item->patient_name =  ($mysqlPatient->title_name ?? '') . ' ' . ($mysqlPatient->fname ?? '') . ' ' . ($mysqlPatient->lname ?? '');
                }
             }

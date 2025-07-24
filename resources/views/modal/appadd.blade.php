@@ -125,8 +125,8 @@
 
                     <div class="mb-3">
                         <label for="appointmentDate" class="form-label">วันที่นัด</label>
-                        <input type="date" class="form-control date-lock" id="appointmentDate"
-                            name="appointmentDate" disabled onkeydown="return false">
+                        <input class="form-control date-lock" id="appointmentDate"
+                            name="appointmentDate" disabled placeholder="เลือกวันที่นัด" >
                     </div>
 
 
@@ -149,7 +149,7 @@
                         
                         <!-- ตัวเลือก 3 -->
                         <div class="form-check mb-2">
-                            <input class="form-check-input" type="radio" name="appointment_time" id="time2"
+                            <input class="form-check-input" type="radio" name="appointment_time" id="time3"
                                 value="14:00-14:30" disabled />
                             <label class="form-check-label" for="time2">15:00 - 16:00</label>
                         </div>
@@ -160,11 +160,11 @@
                                 value="custom" disabled />
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <input type="time" class="form-control form-control-sm" id="custom_start_time"
+                                    <input type="text" class="form-control form-control-sm" id="custom_start_time"
                                         name="custom_start_time" disabled />
                                 </div>
                                 <div class="col-6">
-                                    <input type="time" class="form-control form-control-sm" id="custom_end_time"
+                                    <input type="text" class="form-control form-control-sm" id="custom_end_time"
                                         name="custom_end_time" disabled />
                                 </div>
                             </div>

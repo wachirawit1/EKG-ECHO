@@ -48,6 +48,7 @@ Route::get('/test', [TestController::class, 'renderView']);
 Route::post('/check-appointment-history', [AppointmentController::class, 'checkAppointmentHistory'])->name('appointment.checkHistory');
 
 // Route สำหรับแสดงรายงาน
+Route::get('/dashboard', [MainController::class, 'showDashboard'])->name('dashboard.show');
 Route::get('/report', [MainController::class, 'showReport'])->name('report.show');
 
 Route::get('/login', function () {

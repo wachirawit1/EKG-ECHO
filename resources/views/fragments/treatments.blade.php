@@ -33,10 +33,10 @@
 
 <div class="d-flex justify-content-md-center align-items-center d-grid gap-2 ">
     <form id="searchTreatForm" onsubmit="searchTreatments(event)" class="d-flex gap-2">
-        <input type="date" class="form-control" name="start_date" id="start_date" value="{{ request('start_date') }}"
-            onkeydown="return false"> -
+        <input class="form-control" name="start_date" id="start_date" value="{{ request('start_date') }}"
+            placeholder="วันที่เริ่ม"> -
         <input type="date" class="form-control" name="end_date" id="end_date" value="{{ request('end_date') }}"
-            onkeydown="return false">
+            placeholder="วันที่สิ้นสุด">
         <div class="input-group">
             <input class="form-control" type="search" name="hn" placeholder="ค้นหา HN..."
                 value="{{ request('hn') }}">
@@ -46,14 +46,14 @@
         </div>
     </form>
 
-        {{-- modal trigger --}}
-        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTreatment">
-            <i class="bi bi-plus-circle"></i> เพิ่มการตรวจ EKG
-        </button>
+    {{-- modal trigger --}}
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTreatment">
+        <i class="bi bi-plus-circle"></i> เพิ่มการตรวจ EKG
+    </button>
 
 
-        @include('modal.treatadd')
-     
+    @include('modal.treatadd')
+
 </div>
 
 

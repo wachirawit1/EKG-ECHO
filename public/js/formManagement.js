@@ -79,7 +79,7 @@ document
                 target.id === "fname" ||
                 target.id === "lname" ||
                 target.tagName === "SELECT" || // เพิ่มการตรวจสอบ SELECT element
-                target.id === "titleName" 
+                target.id === "titleName"
             ) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -94,18 +94,23 @@ document
                 // ตรวจสอบว่ามีข้อมูลครบหรือไม่
                 if (fname && lname && hospitalName) {
                     enableAppointmentFields(modal);
-                    
+
                     // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
                     const resourceRadio = modal.querySelector(
                         'input[name="resource"]:checked'
                     );
                     if (resourceRadio && resourceRadio.value === "out") {
-                        await checkAppointmentHistory("out", null, fname, lname);
+                        await checkAppointmentHistory(
+                            "out",
+                            null,
+                            fname,
+                            lname
+                        );
                     }
                 }
                 return;
             }
-            
+
             const hnInput = modal.querySelector("#hn");
             const nameDisplay = modal.querySelector("#hn_name_display");
             const extraFields = modal.querySelector("#extra-patient-fields");
@@ -307,47 +312,28 @@ async function checkAppointmentHistory(
     fname = null,
     lname = null
 ) {
-    // Validate input parameters
-    if (!resource || (resource !== "in" && resource !== "out")) {
-        console.error("Invalid resource parameter:", resource);
-        return;
-    }
+    if (!resource || (resource !== "in" && resource !== "out")) return;
 
-    // ตรวจสอบว่ามี modal ที่เปิดอยู่หรือไม่
     const modal = document.querySelector(".modal.show");
-    if (!modal) {
-        console.error("No active modal found");
-        return;
-    }
+    if (!modal) return;
 
-    let checkData = { resource: resource };
+    let checkData = { resource };
 
     if (resource === "in") {
-        if (!hn || hn.trim() === "") {
-            console.error("HN is required for 'in' resource");
-            return;
-        }
+        if (!hn || hn.trim() === "") return;
         checkData.hn = hn.trim();
     } else if (resource === "out") {
-        if (!fname || !lname || fname.trim() === "" || lname.trim() === "") {
-            console.error(
-                "First name and last name are required for 'out' resource"
-            );
+        if (!fname || !lname || fname.trim() === "" || lname.trim() === "")
             return;
-        }
         checkData.fname = fname.trim();
         checkData.lname = lname.trim();
     }
-
-    console.log("Checking appointment history with data:", checkData);
 
     try {
         const csrfToken = document
             .querySelector('meta[name="csrf-token"]')
             ?.getAttribute("content");
-
         if (!csrfToken) {
-            console.error("CSRF token not found");
             showAppointmentAlert(
                 "ไม่พบ CSRF token กรุณาโหลดหน้าใหม่",
                 "danger"
@@ -368,54 +354,31 @@ async function checkAppointmentHistory(
             }
         );
 
-        console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("HTTP error response:", errorText);
-
-            // แสดง error message ที่เป็นมิตรกับผู้ใช้
+        const responseText = await response.text();
+        if (!response.ok || !responseText.trim()) {
             let errorMessage = "เกิดข้อผิดพลาดในการเชื่อมต่อ";
-            if (response.status === 404) {
-                errorMessage = "ไม่พบ API endpoint";
-            } else if (response.status === 422) {
+            if (response.status === 404) errorMessage = "ไม่พบ API endpoint";
+            else if (response.status === 422)
                 errorMessage = "ข้อมูลที่ส่งไม่ถูกต้อง";
-            } else if (response.status === 500) {
+            else if (response.status === 500)
                 errorMessage = "เกิดข้อผิดพลาดในระบบ";
-            }
+            else if (!responseText.trim())
+                errorMessage = "ไม่ได้รับข้อมูลจากระบบ";
 
             showAppointmentAlert(errorMessage, "danger");
-            return;
-        }
-
-        // ดึง response text ก่อน
-        const responseText = await response.text();
-        console.log("Raw response:", responseText);
-
-        // ตรวจสอบว่า response เป็น JSON หรือไม่
-        if (!responseText.trim()) {
-            console.error("Empty response from server");
-            showAppointmentAlert("ไม่ได้รับข้อมูลจากระบบ", "danger");
             return;
         }
 
         let data;
         try {
             data = JSON.parse(responseText);
-        } catch (jsonError) {
-            console.error("JSON parse error:", jsonError);
-            console.error("Response text:", responseText);
+        } catch {
             showAppointmentAlert("ข้อมูลที่ได้รับจากระบบไม่ถูกต้อง", "danger");
             return;
         }
 
-        console.log("Parsed appointment data:", data);
-
-        // เคลียร์ alert เก่าก่อน
         clearAppointmentAlert();
 
-        // แสดงผลตามสถานะ
         switch (data.status) {
             case "found":
                 showAppointmentAlert(
@@ -440,20 +403,15 @@ async function checkAppointmentHistory(
                 );
                 break;
             default:
-                console.warn("Unknown status:", data.status);
                 showAppointmentAlert("ได้รับข้อมูลที่ไม่คาดคิด", "warning");
         }
     } catch (error) {
-        console.error("Appointment check error:", error);
         clearAppointmentAlert();
-
-        // แสดง error message ที่เป็นมิตรกับผู้ใช้
         let errorMessage = "เกิดข้อผิดพลาดในการตรวจสอบข้อมูล";
-        if (error.message.includes("Failed to fetch")) {
+        if (error.message.includes("Failed to fetch"))
             errorMessage = "ไม่สามารถเชื่อมต่อกับระบบได้";
-        } else if (error.message.includes("NetworkError")) {
+        else if (error.message.includes("NetworkError"))
             errorMessage = "เกิดปัญหาการเชื่อมต่อเครือข่าย";
-        }
 
         showAppointmentAlert(errorMessage, "danger");
     }
@@ -467,7 +425,6 @@ function showAppointmentAlert(message, type = "info") {
     }
 
     if (!["success", "info", "warning", "danger"].includes(type)) {
-        console.warn("Invalid alert type, using 'info' as default");
         type = "info";
     }
 
@@ -485,7 +442,6 @@ function showAppointmentAlert(message, type = "info") {
     // หา modal ที่เปิดอยู่
     const modal = document.querySelector(".modal.show");
     if (!modal) {
-        console.warn("No active modal found for alert display");
         return;
     }
 

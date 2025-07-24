@@ -38,11 +38,11 @@
     {{-- Section: Search & Add --}}
     <form id="searchForm" class="d-flex gap-2" onsubmit="searchAppointments(event)">
 
-        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ request('start_date') }}"
-            onkeydown="return false"> -
+        <input  class="form-control" id="start_date" name="start_date" value="{{ request('start_date') }}"
+            placeholder="วันที่เริ่ม"> -
 
-        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ request('end_date') }}"
-            onkeydown="return false">
+        <input class="form-control" id="end_date" name="end_date" value="{{ request('end_date') }}"
+            placeholder="วันที่สิ้นสุด">
 
         <select class="form-select" name="doc_id" id="doc_id">
             <option value="">ค้นหาด้วยหมอ</option>

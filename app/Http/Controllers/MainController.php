@@ -851,22 +851,131 @@ class MainController extends Controller
          'found' => $found,
       ]);
    }
-   public function showReport()
+   public function showDashboard()
    {
       $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
-      $today = Carbon::now();
-      $todayThai = ($today->year + 543) . $today->format('md'); // ได้ 25680721
 
+      $today = Carbon::now();
+      $todayThai = ($today->year + 543) . $today->format('md');
+
+      // นับจำนวนรายการนัดวันนี้
+      $todayCount = DB::connection('sqlsrv')
+         ->table('Appoint')
+         ->whereIn('doctor', $targetDoc)
+         ->where('appoint_date', $todayThai)
+         ->count();
+
+      // ข้อมูลการนัด
       $appoint = DB::connection('sqlsrv')
          ->table('Appoint')
          ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
          ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+         ->leftJoin('DOCC', 'Appoint.doctor', '=', 'DOCC.docCode') // ถ้าต้องการ doctor name
          ->whereIn('doctor', $targetDoc)
-         ->where('appoint_date', '>=', $todayThai)
-         ->orderByDesc('Appoint.appoint_date')
-         ->limit(10000)
-         ->paginate(9);
+         ->where('appoint_date', '=', $todayThai)
+         ->orderBy('Appoint.appoint_time_from', 'ASC')
+         ->get();
+      $groupedAppoints = $appoint->groupBy('docName');
+      foreach ($appoint as $a) {
+         $a->formatted_date = Carbon::createFromFormat('Ymd', strval($a->appoint_date))
+            ->locale('th')
+            ->translatedFormat('j F Y');
+      }
 
-      return view('report', compact('appoint'));
+      // 🔸 นัดหมายที่จะถึง (พรุ่งนี้ถึงอีก 7 วัน)
+      $futureStart = $today->copy()->addDay(); // พรุ่งนี้
+      $futureEnd = $today->copy()->addDays(7); // อีก 7 วัน
+      $startThai = ($futureStart->year + 543) . $futureStart->format('md');
+      $endThai = ($futureEnd->year + 543) . $futureEnd->format('md');
+
+      $upcoming = DB::connection('sqlsrv')
+         ->table('Appoint')
+         ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
+         ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+         ->whereIn('doctor', $targetDoc)
+         ->whereBetween('appoint_date', [$startThai, $endThai])
+         ->orderBy('appoint_date')
+         ->orderBy('appoint_time_from')
+         ->limit(5) // แสดง 5 รายการพอ
+         ->get();
+
+      foreach ($upcoming as $u) {
+         try {
+            $thDate = strval($u->appoint_date); // 25680721
+            $time = $u->appoint_time_from;      // 08:30
+
+            $year = intval(substr($thDate, 0, 4)) - 543; // 2025
+            $monthDay = substr($thDate, 4);             // 0721
+
+            $dateTimeStr = $year . $monthDay . ' ' . $time; // 20250721 08:30
+
+            $carbon = Carbon::createFromFormat('Ymd H:i', $dateTimeStr);
+
+            $u->date_human = $carbon->locale('th')->diffForHumans(
+               Carbon::now()->startOfDay(),
+               ['options' => Carbon::ONE_DAY_WORDS]
+            );
+
+            $u->time = $carbon->format('H:i');
+            $u->fullname = $u->titleName . $u->firstName . ' ' . $u->lastName;
+            $u->service_name = $u->service ?? 'ไม่ระบุ';
+         } catch (\Exception $e) {
+            $u->date_human = '-';
+            $u->time = '-';
+            $u->fullname = '-';
+            $u->service_name = '-';
+         }
+      }
+      return view('dashboard', compact('groupedAppoints', 'upcoming', 'todayCount'));
+   }
+   public function showReport()
+   {
+      $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
+      $today = Carbon::now();
+      $todayThai = ($today->year + 543) . $today->format('md');
+
+      $mysql_appointment = DB::connection('mysql')
+         ->table('appointment')
+         ->where('a_date', '=', $today)
+         ->get()
+         ->map(function ($item) {
+            return (object)[
+               'hn' => $item->hn,
+               'date' => $item->a_date,
+               'time' => $item->a_time,
+               'doctor' => $item->doc_id,
+               'source' => 'mysql'
+            ];
+         });
+
+      $sql_appontment = DB::connection('sqlsrv')
+         ->table('Appoint')
+         ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
+         ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+         ->leftJoin('DOCC', 'Appoint.doctor', '=', 'DOCC.docCode') // ถ้าต้องการ doctor name
+         ->whereIn('doctor', $targetDoc)
+         ->where('appoint_date', '=', $todayThai)
+         ->get()
+         ->map(function ($item) {
+            $thDate = strval($item->appoint_date);     // '25680723'
+            $year = intval(substr($thDate, 0, 4)) - 543; // 2025
+            $monthDay = substr($thDate, 4);              // '0723'
+            $dateEn = $year . $monthDay;
+            return (object)[
+               'hn' => $item->hn,
+               'date' => \Carbon\Carbon::createFromFormat('Ymd', $dateEn)
+                  ->locale('th')
+                  ->translatedFormat('j F Y'),
+               'time' => $item->appoint_time_from . '-' . $item->appoint_time_to,
+               'doctor' => $item->doctor,
+               'source' => 'sql'
+            ];
+         });
+      $allAppointments = $mysql_appointment->merge($sql_appontment)
+         ->sortBy('date');
+
+
+
+      return view('report', compact('allAppointments'));
    }
 }

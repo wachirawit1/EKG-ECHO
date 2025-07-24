@@ -7,6 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title')</title>
 
+    {{-- flatpickr --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/material_green.css">
+
+    <!-- JS -->
+    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js"></script>
+
+    <!-- สำหรับ Font Awesome 5 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -231,7 +240,7 @@
         }
 
         /* เพิ่ม CSS สำหรับ PDF */
-       .pdf-preview-container {
+        .pdf-preview-container {
             background-color: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
@@ -281,8 +290,8 @@
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link  {{ Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
-                            aria-current="page" href="{{ route('report.show')}}">รายงาน</a>
+                        <a class="nav-link  {{ Route::currentRouteName() == 'dashboard.show' || Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
+                            aria-current="page" href="{{ route('dashboard.show') }}">แดชบอร์ด</a>
                     </li>
 
                     <li class="nav-item dropdown">
@@ -307,8 +316,27 @@
     <div class="container">
         @yield('content')
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/th.js"></script>
 
+    <!-- เพิ่ม JavaScript สำหรับ PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    {{-- jquery --}}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {{-- select2 js --}}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="{{ asset('js/loadPage.js') }}"></script>
+    <script scr="{{ asset('js/appointCheck.js') }}"></script>
+    <script src="{{ asset('js/search.js') }}"></script>
+    <script src="{{ asset('js/cursor.js') }}"></script>
+    <script src="{{ asset('js/printer.js') }}"></script>
+    <script src="{{ asset('js/flatpickr.js') }}"></script>
+    
+    @stack('script')
 
+    
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">
@@ -316,6 +344,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"
         integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous">
     </script>
+
 </body>
 
 </html>

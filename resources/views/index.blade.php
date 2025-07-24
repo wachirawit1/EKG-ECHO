@@ -17,64 +17,52 @@
     </div>
 
     <div class="" id="main-content"></div>
-    <!-- เพิ่ม JavaScript สำหรับ PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    {{-- jquery --}}
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {{-- select2 js --}}
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="{{ asset('js/loadPage.js') }}"></script>
+
+    @push('script')
     <script src="{{ asset('js/formManagement.js') }}"></script>
-    <script scr="{{ asset('js/appointCheck.js') }}"></script>
-    <script src="{{ asset('js/search.js') }}"></script>
-    <script src="{{ asset('js/cursor.js') }}"></script>
-    <script src="{{ asset('js/printer.js') }}"></script>
-    <script>
-        // เรียกฟังก์ชันทันทีตอนโหลดหน้า (สำหรับตั้งค่าครั้งแรก)
-        document.addEventListener("DOMContentLoaded", function() {
-            togglePatientFields();
-
-        });
-
-        // โหลดหน้าแรกเป็นตารางนัด
-        loadPage('appointments');
-
-        // Event Handlers
-        if (typeof $ !== "undefined") {
-            // jQuery version
-            $(document).ready(function() {
-                console.log("PDF Script loaded (jQuery)");
-
-                $(document).on("click", ".print-btn", function() {
-                    console.log("Print button clicked");
-                    const patientId = $(this).data("id");
-                    console.log("Patient ID:", patientId);
-                    generatePDFInNewTab(patientId);
-                });
-            });
-        } else {
-            // Vanilla JS version
+        <script>
+            // เรียกฟังก์ชันทันทีตอนโหลดหน้า (สำหรับตั้งค่าครั้งแรก)  
             document.addEventListener("DOMContentLoaded", function() {
-                console.log("PDF Script loaded (Vanilla JS)");
+                togglePatientFields();
 
-                document.addEventListener("click", function(e) {
-                    if (
-                        e.target.classList.contains("print-btn") ||
-                        e.target.closest(".print-btn")
-                    ) {
+            });
+
+            // โหลดหน้าแรกเป็นตารางนัด
+            loadPage('appointments');
+
+            // Event Handlers
+            if (typeof $ !== "undefined") {
+                // jQuery version
+                $(document).ready(function() {
+
+                    $(document).on("click", ".print-btn", function() {
                         console.log("Print button clicked");
-                        const button = e.target.classList.contains("print-btn") ?
-                            e.target :
-                            e.target.closest(".print-btn");
-                        const patientId = button.dataset.id;
+                        const patientId = $(this).data("id");
                         console.log("Patient ID:", patientId);
                         generatePDFInNewTab(patientId);
-                    }
+                    });
                 });
-            });
-        }
-    </script>
+            } else {
+                // Vanilla JS version
+                document.addEventListener("DOMContentLoaded", function() {
+                    document.addEventListener("click", function(e) {
+                        if (
+                            e.target.classList.contains("print-btn") ||
+                            e.target.closest(".print-btn")
+                        ) {
+                            console.log("Print button clicked");
+                            const button = e.target.classList.contains("print-btn") ?
+                                e.target :
+                                e.target.closest(".print-btn");
+                            const patientId = button.dataset.id;
+                            console.log("Patient ID:", patientId);
+                            generatePDFInNewTab(patientId);
+                        }
+                    });
+                });
+            }
+        </script>
+    @endpush
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

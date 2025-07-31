@@ -224,11 +224,11 @@
                                                                 $start = $parts[0] ?? '';
                                                                 $end = $parts[1] ?? '';
                                                             @endphp
-                                                            <input type="time" class="form-control"
+                                                            <input type="text" class="form-control"
                                                                 id="a_time_start{{ $item->a_id }}"
                                                                 name="a_time_start" value="{{ $start }}"
                                                                 hidden>
-                                                            <input type="time" class="form-control"
+                                                            <input type="text" class="form-control"
                                                                 id="a_time_end{{ $item->a_id }}" name="a_time_end"
                                                                 value="{{ $end }}" hidden>
                                                         </div>

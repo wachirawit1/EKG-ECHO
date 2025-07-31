@@ -27,6 +27,9 @@
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    {{-- favicon --}}
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+
     <style>
         .btn-toggle {
             background-color: #e9ecef;
@@ -300,7 +303,7 @@
                             ตัวเลือก
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="/test">ตัวเลือก 1</a></li>
+                            <li><a class="dropdown-item" href="#">ตัวเลือก 1</a></li>
                             <li><a class="dropdown-item" href="#">ตัวเลือก 2</a></li>
                             <li>
                                 <hr class="dropdown-divider">
@@ -316,7 +319,7 @@
     <div class="container">
         @yield('content')
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/th.js"></script>
 
@@ -333,10 +336,10 @@
     <script src="{{ asset('js/cursor.js') }}"></script>
     <script src="{{ asset('js/printer.js') }}"></script>
     <script src="{{ asset('js/flatpickr.js') }}"></script>
-    
+
     @stack('script')
 
-    
+
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">

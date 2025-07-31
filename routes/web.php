@@ -42,8 +42,6 @@ Route::get('/api/patient-name', [MainController::class, 'getPatientName']);
 // routes/api.php
 Route::get('/api/search-doctors', [AppointmentController::class, 'searchDoctors']);
 
-Route::get('/test', [TestController::class, 'renderView']);
-
 // Route หลัก
 Route::post('/check-appointment-history', [AppointmentController::class, 'checkAppointmentHistory'])->name('appointment.checkHistory');
 

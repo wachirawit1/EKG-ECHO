@@ -60,7 +60,6 @@ class MainController extends Controller
          //ดึง hn ทั้งหมดในหน้านี้
          $hns = $appointments->pluck('hn')
             ->map(fn($hn) => str_pad(trim(preg_replace('/\s+/', '', $hn)), 7, ' ', STR_PAD_LEFT))
-            ->filter(fn($hn) => trim($hn) !== '') // ตัดพวก hn ว่างล้วนออก
             ->unique()
             ->toArray();
 
@@ -851,6 +850,8 @@ class MainController extends Controller
          'found' => $found,
       ]);
    }
+
+   // แสดงหน้า dashboard
    public function showDashboard()
    {
       $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
@@ -865,22 +866,98 @@ class MainController extends Controller
          ->where('appoint_date', $todayThai)
          ->count();
 
+      // เสร็จสิ้น
+      $doneCount = DB::connection('sqlsrv')
+         ->table('Appoint')
+         ->whereIn('doctor', $targetDoc)
+         ->where('appoint_date', $todayThai)
+         ->where('appoint_time_to', '<', $today->format('H:i'))
+         ->count();
+
       // ข้อมูลการนัด
-      $appoint = DB::connection('sqlsrv')
+      // mysql
+      $mysql_appointment = DB::connection('mysql')
+         ->table('appointment')
+         ->where('a_date', '=', $today->toDateString())
+         ->orderBy('a_time', 'ASC')
+         ->get()
+         ->map(function ($item) {
+            return (object)[
+               'hn' => str_pad($item->hn, 7, ' ', STR_PAD_LEFT),
+               'date' => $item->a_date,
+               'time' => $item->a_time,
+               'doctor' => str_pad($item->doc_id, 6, ' ', STR_PAD_LEFT),
+               'source' => 'สมุดบันทึก'
+            ];
+         });
+
+      //เตรียมข้อมูล
+      $hns = $mysql_appointment->pluck('hn')->unique()->toArray();
+      $doctorIDs = $mysql_appointment->pluck('doctor')->unique()->toArray();
+
+      // ดึงข้อมูลผู้ป่วยจาก SQL Server
+      $patients = DB::connection('sqlsrv')
+         ->table('PATIENT')
+         ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+         ->whereIn('hn', $hns)
+         ->get()
+         ->mapWithKeys(function ($item) {
+            $fullName = trim($item->titleName) . ' ' . trim($item->firstName) . ' ' . trim($item->lastName);
+            return [$item->hn => $fullName];
+         });
+
+      // ดึงข้อมูลแพทย์จาก SQL Server
+      $doctors = DB::connection('sqlsrv')
+         ->table('DOCC')
+         ->whereIn('docCode', $doctorIDs)
+         ->get()
+         ->mapWithKeys(function ($item) {
+            $fullName = trim($item->doctitle) . ' ' . trim($item->docName) . ' ' . trim($item->docLName);
+            return [$item->docCode => $fullName];
+         });
+
+      // รวมข้อมูลนัดหมายจาก MySQL และ SQL Server
+      $combinedAppointments = $mysql_appointment->map(function ($item) use ($patients, $doctors) {
+         return (object)[
+            'hn' => $item->hn,
+            'patient_name' => $patients[$item->hn] ?? 'ไม่ระบุ',
+            'date' => \Carbon\Carbon::parse($item->date)->locale('th')->translatedFormat('j F Y'),
+            'time' => $item->time,
+            'doctor' => $doctors[$item->doctor] ?? 'ไม่ระบุ',
+            'source' => $item->source
+         ];
+      });
+
+
+      $sql_appontment = DB::connection('sqlsrv')
          ->table('Appoint')
          ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
          ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
          ->leftJoin('DOCC', 'Appoint.doctor', '=', 'DOCC.docCode') // ถ้าต้องการ doctor name
          ->whereIn('doctor', $targetDoc)
          ->where('appoint_date', '=', $todayThai)
-         ->orderBy('Appoint.appoint_time_from', 'ASC')
-         ->get();
-      $groupedAppoints = $appoint->groupBy('docName');
-      foreach ($appoint as $a) {
-         $a->formatted_date = Carbon::createFromFormat('Ymd', strval($a->appoint_date))
-            ->locale('th')
-            ->translatedFormat('j F Y');
-      }
+         ->orderBy('appoint_time_from', 'ASC')
+         ->get()
+         ->map(function ($item) {
+            $thDate = strval($item->appoint_date);     // '25680723'
+            $year = intval(substr($thDate, 0, 4)) - 543; // 2025
+            $monthDay = substr($thDate, 4);              // '0723'
+            $dateEn = $year . $monthDay;
+            return (object)[
+               'hn' => $item->hn,
+               'patient_name' => trim($item->titleName) . ' ' . trim($item->firstName) . ' ' . trim($item->lastName),
+               'date' => \Carbon\Carbon::createFromFormat('Ymd', $dateEn)
+                  ->locale('th')
+                  ->translatedFormat('j F Y'),
+               'time' => $item->appoint_time_from . '-' . $item->appoint_time_to,
+               'doctor' => trim($item->doctitle) . ' ' . trim($item->docName) . ' ' . trim($item->docLName),
+               'pt_status' => ($item->pt_status === 'I') ? 'IPD' : (($item->pt_status === 'O') ? 'OPD' : 'Discharge'),
+               'source' => 'homc'
+            ];
+         });
+      $allAppointments = $combinedAppointments->merge($sql_appontment)
+         ->sortBy('time');
+      $appointmentsByDoctor = $allAppointments->groupBy('doctor');
 
       // 🔸 นัดหมายที่จะถึง (พรุ่งนี้ถึงอีก 7 วัน)
       $futureStart = $today->copy()->addDay(); // พรุ่งนี้
@@ -926,8 +1003,10 @@ class MainController extends Controller
             $u->service_name = '-';
          }
       }
-      return view('dashboard', compact('groupedAppoints', 'upcoming', 'todayCount'));
+      return view('dashboard', compact('appointmentsByDoctor', 'upcoming', 'todayCount', 'doneCount'));
    }
+
+   // แสดงหน้า report
    public function showReport()
    {
       $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
@@ -936,17 +1015,56 @@ class MainController extends Controller
 
       $mysql_appointment = DB::connection('mysql')
          ->table('appointment')
-         ->where('a_date', '=', $today)
+         ->where('a_date', '=', $today->toDateString())
+         ->orderBy('a_time', 'ASC')
          ->get()
          ->map(function ($item) {
             return (object)[
-               'hn' => $item->hn,
+               'hn' => str_pad($item->hn, 7, ' ', STR_PAD_LEFT),
                'date' => $item->a_date,
                'time' => $item->a_time,
-               'doctor' => $item->doc_id,
-               'source' => 'mysql'
+               'doctor' => str_pad($item->doc_id, 6, ' ', STR_PAD_LEFT),
+               'source' => 'สมุดบันทึก'
             ];
          });
+
+      //เตรียมข้อมูล
+      $hns = $mysql_appointment->pluck('hn')->unique()->toArray();
+      $doctorIDs = $mysql_appointment->pluck('doctor')->unique()->toArray();
+
+      // ดึงข้อมูลผู้ป่วยจาก SQL Server
+      $patients = DB::connection('sqlsrv')
+         ->table('PATIENT')
+         ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+         ->whereIn('hn', $hns)
+         ->get()
+         ->mapWithKeys(function ($item) {
+            $fullName = trim($item->titleName) . ' ' . trim($item->firstName) . ' ' . trim($item->lastName);
+            return [$item->hn => $fullName];
+         });
+
+      // ดึงข้อมูลแพทย์จาก SQL Server
+      $doctors = DB::connection('sqlsrv')
+         ->table('DOCC')
+         ->whereIn('docCode', $doctorIDs)
+         ->get()
+         ->mapWithKeys(function ($item) {
+            $fullName = trim($item->doctitle) . ' ' . trim($item->docName) . ' ' . trim($item->docLName);
+            return [$item->docCode => $fullName];
+         });
+
+      // รวมข้อมูลนัดหมายจาก MySQL และ SQL Server
+      $combinedAppointments = $mysql_appointment->map(function ($item) use ($patients, $doctors) {
+         return (object)[
+            'hn' => $item->hn,
+            'patient_name' => $patients[$item->hn] ?? 'ไม่ระบุ',
+            'date' => \Carbon\Carbon::parse($item->date)->locale('th')->translatedFormat('j F Y'),
+            'time' => $item->time,
+            'doctor' => $doctors[$item->doctor] ?? 'ไม่ระบุ',
+            'source' => $item->source
+         ];
+      });
+
 
       $sql_appontment = DB::connection('sqlsrv')
          ->table('Appoint')
@@ -955,6 +1073,7 @@ class MainController extends Controller
          ->leftJoin('DOCC', 'Appoint.doctor', '=', 'DOCC.docCode') // ถ้าต้องการ doctor name
          ->whereIn('doctor', $targetDoc)
          ->where('appoint_date', '=', $todayThai)
+         ->orderBy('appoint_time_from', 'ASC')
          ->get()
          ->map(function ($item) {
             $thDate = strval($item->appoint_date);     // '25680723'
@@ -963,19 +1082,18 @@ class MainController extends Controller
             $dateEn = $year . $monthDay;
             return (object)[
                'hn' => $item->hn,
+               'patient_name' => trim($item->titleName) . ' ' . trim($item->firstName) . ' ' . trim($item->lastName),
                'date' => \Carbon\Carbon::createFromFormat('Ymd', $dateEn)
                   ->locale('th')
                   ->translatedFormat('j F Y'),
                'time' => $item->appoint_time_from . '-' . $item->appoint_time_to,
-               'doctor' => $item->doctor,
-               'source' => 'sql'
+               'doctor' => trim($item->doctitle) . ' ' . trim($item->docName) . ' ' . trim($item->docLName),
+               'source' => 'homc'
             ];
          });
-      $allAppointments = $mysql_appointment->merge($sql_appontment)
-         ->sortBy('date');
-
-
-
-      return view('report', compact('allAppointments'));
+      $allAppointments = $combinedAppointments->merge($sql_appontment)
+         ->sortBy('time');
+      $appointmentsByDoctor = $allAppointments->groupBy('doctor');
+      return view('report', compact('appointmentsByDoctor', 'allAppointments'));
    }
 }

@@ -665,7 +665,20 @@ document.addEventListener("click", function (e) {
         e.target.classList.add("btn-secondary");
         e.target.disabled = true;
 
-        // เปิด input ยกเว้น field ที่ readonly ถาวร
+        // ซ่อน input:text
+        document.getElementById(`a_date_text${id}`).style.display = "none";
+        document.getElementById(`a_time_text${id}`).classList.add("d-none");
+
+        // เปิด input
+        const dateInput = document.getElementById(`a_date${id}`);
+        const timeStartInput = document.getElementById(`a_time_start${id}`);
+        const timeEndInput = document.getElementById(`a_time_end${id}`);
+
+        dateInput.hidden = false;
+        timeStartInput.hidden = false;
+        timeEndInput.hidden = false;
+
+        // เปิดให้กรอก
         form.querySelectorAll("input, textarea").forEach((el) => {
             const editableFields = [
                 `a_date${id}`,
@@ -674,23 +687,39 @@ document.addEventListener("click", function (e) {
                 `a_time_start${id}`,
                 `a_time_end${id}`,
             ];
-            // ซ่อน input:text
-            document.getElementById(`a_date_text${id}`).style.display = "none";
-            document.getElementById(`a_time_text${id}`).classList.add("d-none");
-            // เปิดให้กรอก
-            document.getElementById(`a_date${id}`).hidden = false;
-            document.getElementById(`a_time_start${id}`).hidden = false;
-            document.getElementById(`a_time_end${id}`).hidden = false;
-
             if (editableFields.includes(el.id)) {
                 el.removeAttribute("readonly");
             }
         });
 
+        // ✅ Flatpickr: วันนัด (ห้ามย้อนหลัง)
+        flatpickr(dateInput, {
+            dateFormat: "Y-m-d",
+            minDate: "today",
+            allowInput: true
+        });
+
+        // ✅ Flatpickr: เวลาเริ่ม (เริ่มไม่ต่ำกว่า 08:00)
+        flatpickr(timeStartInput, {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            minTime: "08:00",
+            allowInput: true
+        });
+
+        // ✅ Flatpickr: เวลาสิ้นสุด (เลือกได้อิสระ แต่ใช้ 24 ชม)
+        flatpickr(timeEndInput, {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "H:i",
+            time_24hr: true,
+            allowInput: true
+        });
+
         // เปิดปุ่ม "บันทึก"
-        const saveBtn = document.querySelector(
-            `#patientInfo${id} .btn-primary`
-        );
+        const saveBtn = document.querySelector(`#patientInfo${id} .btn-primary`);
         if (saveBtn) saveBtn.disabled = false;
     }
 });

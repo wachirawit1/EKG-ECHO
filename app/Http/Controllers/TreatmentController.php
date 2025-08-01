@@ -12,35 +12,27 @@ class TreatmentController extends Controller
     // เพิ่มการมารักษา
     public function addTreatment(Request $request)
     {
-
-        $hn = str_pad(trim($request->input('hn')), 7, ' ', STR_PAD_LEFT);
-        $t_date = $request->input('t_date');
-        $agency = str_pad(trim($request->input('agency')), 11, ' ', STR_PAD_RIGHT);
-        $forward = str_pad(trim($request->input('forward')), 11, ' ', STR_PAD_RIGHT);
         $resource = $request->input('resource');
-
         if ($resource === 'in') {
+            $hn = str_pad(trim(preg_replace('/\s+/', '', $request->input('hn'))), 7, ' ', STR_PAD_LEFT);
 
-            // คนไข้ใน (SQL Server)
-            $insert = DB::connection('mysql')
-                ->table('treatment')
-                ->insert([
-                    'hn' => $hn,
-                    't_date' => $t_date,
-                    'agency' => $agency,
-                    'forward' => $forward
+            // เช็คว่า appointment มีในวันนี้ไหม
+            $exists = DB::connection('mysql')
+                ->table('appointment')
+                ->where('hn', $hn)
+                ->where('a_date', $request->input('t_date'))
+                ->exists();
+
+            if (!$exists) {
+                return redirect()->back()->with('message', [
+                    'status' => 0,
+                    'title' => 'ไม่พบการนัดหมาย',
+                    'message' => 'ไม่พบข้อมูลนัดหมายของ HN นี้ในวันที่ระบุ'
                 ]);
-
-            $message = $insert
-                ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มข้อมูลการรักษาสำหรับผู้ป่วยในสำเร็จ']
-                : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'ไม่สามารถเพิ่มข้อมูลผู้ป่วยในได้'];
-
-            return redirect()->back()->with('message', $message);
-        } else {
-            // เช็คคนไข้นอกใน MySQL
+            }
+        } else { // out
             $fname = trim($request->input('fname'));
             $lname = trim($request->input('lname'));
-
             $existing = DB::connection('mysql')
                 ->table('patient')
                 ->where('fname', $fname)
@@ -50,35 +42,27 @@ class TreatmentController extends Controller
             if (!$existing) {
                 return redirect()->back()->with('message', [
                     'status' => 0,
-                    'title' => 'เพิ่มไม่สำเร็จ',
-                    'message' => 'ไม่พบข้อมูลผู้ป่วยนอกชื่อดังกล่าว'
+                    'title' => 'ไม่พบผู้ป่วย',
+                    'message' => 'ไม่พบข้อมูลผู้ป่วยนอกรพ. ชื่อนี้'
                 ]);
             }
-
-            // ถ้าเจอ → ใช้ HN จาก patient table แล้วเพิ่มการรักษา
             $hn = $existing->hn;
-
-            $insert = DB::connection('mysql')
-                ->table('treatment')
-                ->insert([
-                    'hn' => $hn,
-                    't_date' => $t_date,
-                    'agency' => $agency,
-                    'forward' => $forward
-                ]);
         }
 
-
-
-
+        // Insert ลงตาราง treatment
+        $insert = DB::connection('mysql')->table('treatment')->insert([
+            'hn' => $hn,
+            't_date' => $request->input('t_date'),
+            'agency' => str_pad(trim($request->input('agency')), 11, ' ', STR_PAD_RIGHT),
+            'forward' => str_pad(trim($request->input('forward')), 11, ' ', STR_PAD_RIGHT),
+        ]);
 
         $message = $insert
-            ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มข้อมูลการรักษาสำหรับผู้ป่วยนอกสำเร็จ']
-            : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'ไม่สามารถเพิ่มข้อมูลผู้ป่วยนอกได้'];
+            ? ['status' => 1, 'title' => 'เพิ่มสำเร็จ', 'message' => 'เพิ่มข้อมูลการรักษาเรียบร้อย']
+            : ['status' => 0, 'title' => 'เพิ่มไม่สำเร็จ', 'message' => 'เกิดข้อผิดพลาดในการบันทึก'];
 
         return redirect()->back()->with('message', $message);
     }
-
 
     //ลบการักษา
     public function deleteTreatment($t_id)

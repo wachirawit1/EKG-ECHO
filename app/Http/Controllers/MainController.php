@@ -874,6 +874,14 @@ class MainController extends Controller
          ->where('appoint_time_to', '<', $today->format('H:i'))
          ->count();
 
+      // กำลังรอ
+      $waitingCount = DB::connection('sqlsrv')
+         ->table('Appoint')
+         ->whereIn('doctor', $targetDoc)
+         ->where('appoint_date', $todayThai)
+         ->where('appoint_time_to', '>=', $today->format('H:i')) // ยังไม่หมดเวลา
+         ->count();
+
       // ข้อมูลการนัด
       // mysql
       $mysql_appointment = DB::connection('mysql')
@@ -1003,7 +1011,7 @@ class MainController extends Controller
             $u->service_name = '-';
          }
       }
-      return view('dashboard', compact('appointmentsByDoctor', 'upcoming', 'todayCount', 'doneCount'));
+      return view('dashboard', compact('appointmentsByDoctor', 'upcoming', 'todayCount', 'doneCount', 'waitingCount'));
    }
 
    // แสดงหน้า report

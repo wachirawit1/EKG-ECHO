@@ -55,13 +55,13 @@
 
                     <div class="mb-3">
                         <label for="t_date" class="form-label">วันที่รักษา</label>
-                        <input type="date" class="form-control" id="t_date" name="t_date"
-                            onkeydown="return false">
+                        <input type="text" class="form-control" id="t_date" name="t_date"
+                            onkeydown="return false" placeholder="เลือกวันที่รักษา" disabled>
                     </div>
 
                     <div class="mb-3">
                         <label for="agency" class="form-label">หน่วยงาน</label>
-                        <select class="form-select" aria-label="Default select example" id="agency" name="agency">
+                        <select class="form-select" aria-label="Default select example" id="agency" name="agency" disabled>
                             <option value="">เลือก</option>
                             <option value="none">ไม่มี</option>
                             <optgroup label="วอร์ด">
@@ -82,7 +82,7 @@
 
                     <div class="mb-3">
                         <label for="forward" class="form-label">ส่งต่อ</label>
-                        <select class="form-select" id="forward" name="forward">
+                        <select class="form-select" id="forward" name="forward" disabled>
                             <option value="">เลือก</option>
                             <option value="none">ไม่มี</option>
                             <optgroup label="วอร์ด">

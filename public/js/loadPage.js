@@ -70,9 +70,11 @@ function setupSelect2InModal() {
     $("#addAppointment").on("shown.bs.modal", function () {
         if (!isSelect2Initialized) {
             $("#wardSelect").select2({
+                theme: "bootstrap-5", 
                 dropdownParent: $("#addAppointment .modal-body"),
                 width: "100%",
             });
+
             isSelect2Initialized = true;
         }
     });
@@ -144,6 +146,14 @@ function initFlatpickr() {
                 dayElem.title = "วันหยุดราชการ";
             }
         },
+    });
+
+    // สำหรับวันที่รักษาใน modal การรักษา
+    flatpickr("#t_date", {
+        dateFormat: "Y-m-d",
+        disable: thaiHolidays,
+        minDate: "today",
+        locale: "th",
     });
 
     flatpickr("#start_date", {

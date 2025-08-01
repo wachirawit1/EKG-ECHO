@@ -59,11 +59,13 @@
                             </div>
                             <div class="col">
                                 <label for="fname" class="form-label">ชื่อ</label>
-                                <input type="text" class="form-control " id="fname" name="fname" placeholder="กรอกชื่อ...">
+                                <input type="text" class="form-control " id="fname" name="fname"
+                                    placeholder="กรอกชื่อ...">
                             </div>
                             <div class="col">
                                 <label for="lname" class="form-label">นามสกุล</label>
-                                <input type="text" class="form-control " id="lname" name="lname" placeholder="กรอกนามสกุล...">
+                                <input type="text" class="form-control " id="lname" name="lname"
+                                    placeholder="กรอกนามสกุล...">
                             </div>
                             <div class="col">
                                 <label for="hospital_name" class="form-label">โรงพยาบาล</label>
@@ -89,7 +91,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="ward" class="form-label">วอร์ด/แผนก</label>
 
-                            <select class="select-bootstrap-style" id="wardSelect" name="ward" disabled>
+                            <select class="form-select" id="wardSelect" name="ward" disabled>
                                 <option value="" selected>เลือก</option>
                                 <option value="none">ไม่มี</option>
                                 <optgroup label="วอร์ด">
@@ -125,8 +127,8 @@
 
                     <div class="mb-3">
                         <label for="appointmentDate" class="form-label">วันที่นัด</label>
-                        <input class="form-control date-lock" id="appointmentDate"
-                            name="appointmentDate" disabled placeholder="เลือกวันที่นัด" >
+                        <input class="form-control date-lock" id="appointmentDate" name="appointmentDate" disabled
+                            placeholder="เลือกวันที่นัด">
                     </div>
 
 
@@ -146,7 +148,7 @@
                                 value="11:00-11:30" disabled />
                             <label class="form-check-label" for="time2">10:30 - 11:30</label>
                         </div>
-                        
+
                         <!-- ตัวเลือก 3 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time3"

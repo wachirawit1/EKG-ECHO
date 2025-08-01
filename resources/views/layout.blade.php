@@ -91,40 +91,6 @@
             color: white;
         }
 
-        .select2-container--default .select2-selection--single {
-            background-color: #fff;
-            border: 1px solid #ced4da;
-            border-radius: 0.375rem;
-            height: calc(2.25rem + 2px);
-            padding: 0.375rem 0.75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #212529;
-            line-height: 1.5rem;
-            padding-left: 0;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 100%;
-            right: 0.75rem;
-        }
-
-        .select2-container--default.select2-container--disabled .select2-selection--single {
-            background-color: #e9ecef;
-            /* พื้นหลังเทาแบบ Bootstrap */
-            opacity: 1;
-            /* ป้องกัน select2 ทำให้จางเกินไป */
-            border: 1px solid #ced4da;
-            /* เส้นขอบเทาอ่อน */
-        }
-
-        .select2-container--default.select2-container--disabled .select2-selection__rendered {
-            color: #6c757d;
-            /* สีข้อความเหมือน disabled */
-        }
 
         .page-item.active .page-link:disabled {
             color: white;
@@ -211,7 +177,17 @@
         .select2-container--disabled .select2-selection {
             background-color: #f8f9fa !important;
             opacity: 0.6;
+            cursor: default !important;
         }
+
+        select.form-select:disabled {
+            background-color: #f8f9fa !important;
+            opacity: 0.6;
+            color: #6c757d;
+            /* ตัวหนังสือสีเทาอ่อน */
+            cursor: default;
+        }
+
 
         /* Loading state สำหรับ HN input */
         .hn-loading {
@@ -338,7 +314,6 @@
     <script src="{{ asset('js/flatpickr.js') }}"></script>
 
     @stack('script')
-
 
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"

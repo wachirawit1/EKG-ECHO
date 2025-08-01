@@ -53,7 +53,7 @@
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                 กำลังรอ
                             </div>
-                            <div class="h5 mb-0 font-weight-bold">7</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ $waitingCount }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-clock fa-2x text-warning"></i>

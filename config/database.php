@@ -105,9 +105,23 @@ return [
             'prefix' => '',
             'encrypt' => 'no',
             'trust_server_certificate' => true,
-    
+
+
 
         ],
+
+        'sqlsrv2' => [
+            'driver' => 'sqlsrv',
+            'host' => env('SQLSRV2_HOST', 'localhost'),
+            'database' => env('SQLSRV2_DATABASE', 'forge'),
+            'username' => env('SQLSRV2_USERNAME', 'forge'),
+            'password' => env('SQLSRV2_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'encrypt' => env('DB_ENCRYPT', 'no'),
+            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', true),
+        ],
+
 
     ],
 

@@ -124,14 +124,21 @@
                             </select>
                         </div>
                     </div>
+<<<<<<< HEAD
 
+=======
+                    
+>>>>>>> 6638ce4 (Initial commit Laravel project)
                     <div class="mb-3">
                         <label for="appointmentDate" class="form-label">วันที่นัด</label>
                         <input class="form-control date-lock" id="appointmentDate" name="appointmentDate" disabled
                             placeholder="เลือกวันที่นัด">
                     </div>
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 6638ce4 (Initial commit Laravel project)
                     <div class="mb-3 px-2">
                         <label class="form-label">ช่วงเวลานัด</label>
 

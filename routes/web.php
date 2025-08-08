@@ -5,6 +5,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TreatmentController;
+use App\Http\Controllers\PmController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 
@@ -52,3 +53,7 @@ Route::get('/report', [MainController::class, 'showReport'])->name('report.show'
 Route::get('/login', function () {
     return view('login');
 })->name('login');
+
+// PM Search
+Route::get('/pm', [pmController::class, 'pm'])->name('pm.index');
+Route::get('/pm_search', [pmController::class, 'pm_search'])->name('pm_search');

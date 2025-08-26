@@ -12,7 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/themes/material_green.css">
 
     <!-- JS -->
-    <script src="https://cdn.jsdelivr.net/npm/air-datepicker@3.3.5/air-datepicker.min.js"></script>
+    <link src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
+    </link>
 
     <!-- สำหรับ Font Awesome 5 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -249,52 +250,71 @@
                 print-color-adjust: exact;
             }
         }
+        
     </style>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark custom-teal">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/">EKG-ECHO</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse " id="navbarSupportedContent">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
-                            aria-current="page" href="/">หน้าแรก</a>
-                    </li>
+            @if (!session()->has('user'))
+                <a class="navbar-brand" href="#">PM</a>
+            @endif
+            @if (session()->has('user'))
+                <a class="navbar-brand" href="#">EKG-ECHO</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse " id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link  {{ Route::currentRouteName() == 'index' || Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
+                                aria-current="page" href="{{ route('index') }}">หน้าแรก</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
+                                aria-current="page" href="{{ route('app.show') }}">จัดการข้อมูล</a>
+                        </li>
 
-                    <li class="nav-item">
-                        <a class="nav-link  {{ Route::currentRouteName() == 'dashboard.show' || Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
-                            aria-current="page" href="{{ route('dashboard.show') }}">แดชบอร์ด</a>
-                    </li>
 
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            ตัวเลือก
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">ตัวเลือก 1</a></li>
-                            <li><a class="dropdown-item" href="#">ตัวเลือก 2</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">ออกจากระบบ</a></li>
-                        </ul>
-                    </li>
-                </ul>
 
-            </div>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                {{ session('user.fullname') }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                @if (session('user.role') == 'Admin')
+                                    <li><a class="dropdown-item" href="{{ route('admin') }}">จัดการผู้ใช้</a></li>
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                @endif
+                                <li>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">ออกจากระบบ</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                </div>
+            @endif
         </div>
     </nav>
     <div class="container">
         @yield('content')
     </div>
+
+    <div class="container-fluid">
+        @yield('dashboardContent')
+    </div>
+
+    <script src="https://kit.fontawesome.com/1b13c5849c.js" crossorigin="anonymous"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/th.js"></script>
@@ -311,12 +331,10 @@
     <script src="{{ asset('js/search.js') }}"></script>
     <script src="{{ asset('js/cursor.js') }}"></script>
     <script src="{{ asset('js/printer.js') }}"></script>
-    <script src="{{ asset('js/flatpickr.js') }}"></script>
 
     @stack('script')
-
     @stack('pmScript')
-
+    @stack('dashboardScript')
 
 
 

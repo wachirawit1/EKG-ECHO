@@ -50,7 +50,7 @@ class AppointmentController extends Controller
     public function showAppointments(Request $request)
     {
 
-        return view('index');
+        return view('management');
     }
 
     function generateHospitalAbbreviation($hospitalName)

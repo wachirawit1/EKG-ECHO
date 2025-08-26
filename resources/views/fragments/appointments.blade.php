@@ -131,7 +131,8 @@
                         <th>HN</th>
                         <th>ชื่อ-นามสกุล</th>
                         <th>วอร์ด</th>
-                        <th>แพทย์ รพ.โรงพยาบาลบุรีรัมย์</th>
+                        <th>แพทย์</th>
+                        <th>หมายเหตุ</th>
                         <th colspan="2" class="text-center">การจัดการ</th>
                     </tr>
                 </thead>
@@ -144,6 +145,7 @@
                             <td>{{ $item->patient_name ?? '-' }}</td>
                             <td>{{ $item->dept_name }}</td>
                             <td>{{ $item->doctor_name }}</td>
+                            <td>{{ $item->note ?? '-' }}</td>
                             <td class="text-center">
                                 <!-- MOdal button !-->
                                 <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"

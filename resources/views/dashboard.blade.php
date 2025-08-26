@@ -1,21 +1,75 @@
 @extends('layout')
 @section('title', 'Dashboard')
-@section('content')
-    <div class="row ">
-        <div class="col-12">
-            <h1 class="h3 mb-4">แดชบอร์ด - ระบบนัดหมายผู้ป่วย</h1>
-        </div>
+@section('dashboardContent')
+
+    {{-- Toast Container - วางไว้ด้านล่างขวาของหน้าจอ --}}
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <!-- Toast สำหรับข้อความสำเร็จ -->
+        @if (session('success'))
+            <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- Toast สำหรับข้อผิดพลาด -->
+        @if (session('error'))
+            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- Toast สำหรับข้อความแจ้งเตือน -->
+        @if (session('warning'))
+            <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('warning') }}
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- Toast สำหรับข้อความทั่วไป -->
+        @if (session('info'))
+            <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-info-circle me-2"></i>{{ session('info') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
     </div>
 
     <!-- Stats Cards -->
-    <div class="row">
+    <div class="row mt-4">
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                นัดหมายวันนี้
+                                นัดหมายวันที่ {{ request('dateFilter', now()->format('d-m-Y')) }}
                             </div>
                             <div class="h5 mb-0 font-weight-bold">{{ $todayCount }}</div>
                         </div>
@@ -121,11 +175,26 @@
     <div class="row">
         <div class="col-lg-8">
             <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">นัดหมายวันนี้</h6>
-                    <a href="#" class="btn btn-sm btn-primary">ดูทั้งหมด</a>
+                <div class="card-header py-3 ">
+                    <a href="{{ route('index') }}" class="btn btn-sm btn-primary">ดูนัดหมายวันนี้</a>
                 </div>
                 <div class="card-body">
+                    <div class="my-2">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-auto">
+                                <label for="appointmentDate" class="col-form-label text-primary"><i
+                                        class="fa-solid fa-calendar fa-bounce"></i>
+                                    เลือกวันที่
+                                </label>
+                            </div>
+                            <div class="col-auto">
+                                <input type="date" class="form-control mr-2" id="appointmentDate" name="dateFilter"
+                                    value="{{ request('dateFilter', now()->toDateString()) }}"
+                                    onchange="filterAppointments()">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <thead>
@@ -134,8 +203,8 @@
                                     <th>ผู้ป่วย</th>
                                     <th>วันที่นัด</th>
                                     <th>HN</th>
-                                    <th>สถานะ</th>
-                                    <th>แหล่งที่มา</th>
+                                    <th>แผนก/วอร์ด</th>
+                                    <th>หมายเหตุ</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -151,9 +220,9 @@
                                             <td>{{ $item->time }}</td>
                                             <td>{{ $item->patient_name }}</td>
                                             <td>{{ $item->date }}</td>
-                                            <td><span class="badge text-bg-primary">{{ '#' . $item->hn }}</span></td>
-                                            <td>{{ $item->pt_status ?? '-' }}</td>
-                                            <td>{{ $item->source }}</td>
+                                            <td><span class="badge text-bg-primary">{{ trim($item->hn) }}</span></td>
+                                            <td>{{ $item->ward ?? '-' }}</td>
+                                            <td>{{ $item->note ?? $item->source }}</td>
                                         </tr>
                                     @endforeach
                                 @endforeach
@@ -211,10 +280,37 @@
         </div>
     </div>
 @endsection
-@push('refresh')
+@push('dashboardScript')
+    <script src="{{ asset('js/flatpickr.js') }}"></script>
     <script>
-        setInterval(function() {
-            location.reload();
-        }, 300000);
+        // setInterval(function() {
+        //     location.reload();
+        // }, 300000);
+
+        flatpickr("#appointmentDate", {
+            dateFormat: "d-m-Y",
+            defaultDate: "{{ request('dateFilter', now()->format('d-m-Y')) }}",
+            locale: "th",
+        });
+
+        function filterAppointments() {
+            const date = document.getElementById('appointmentDate').value; // ได้รูปแบบ YYYY-MM-DD
+            const url = new URL(window.location.href);
+            url.searchParams.set('dateFilter', date); // 🔸 ใช้ชื่อเดียวกับใน Controller
+            window.location.href = url.toString();
+        }
+
+        // แสดง Toast notifications อัตโนมัติเมื่อหน้าโหลด
+        document.addEventListener('DOMContentLoaded', function() {
+            // เลือก toast ทั้งหมด
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+
+            // แสดง toast แต่ละอัน
+            var toastList = toastElList.map(function(toastEl) {
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show(); // แสดง toast
+                return toast;
+            });
+        });
     </script>
 @endpush

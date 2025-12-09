@@ -15,7 +15,8 @@ class CheckUserSession
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
 
-    protected $timeout = 60;
+    // 60 นาที
+    protected $timeout = 60 ;
 
     public function handle(Request $request, Closure $next)
     {
@@ -35,7 +36,7 @@ class CheckUserSession
 
         // อัปเดตเวลาการใช้งานล่าสุด
         Session::put('user.last_activity', $now);
-        
+
         return $next($request);
     }
 }

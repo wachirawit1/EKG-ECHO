@@ -2,65 +2,6 @@
 @section('title', 'Dashboard')
 @section('dashboardContent')
 
-    {{-- Toast Container - วางไว้ด้านล่างขวาของหน้าจอ --}}
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-        <!-- Toast สำหรับข้อความสำเร็จ -->
-        @if (session('success'))
-            <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-
-        <!-- Toast สำหรับข้อผิดพลาด -->
-        @if (session('error'))
-            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-
-        <!-- Toast สำหรับข้อความแจ้งเตือน -->
-        @if (session('warning'))
-            <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('warning') }}
-                    </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-
-        <!-- Toast สำหรับข้อความทั่วไป -->
-        @if (session('info'))
-            <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-info-circle me-2"></i>{{ session('info') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-    </div>
-
     <!-- Stats Cards -->
     <div class="row mt-4">
         <div class="col-xl-3 col-md-6 mb-4">
@@ -146,17 +87,17 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <a href="#" class="btn btn-primary btn-block">
+                            <a href="{{route('app.show')}}" class="btn btn-primary btn-block">
                                 <i class="fas fa-plus mr-2"></i> เพิ่มนัดหมายใหม่
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="#" class="btn btn-success btn-block">
+                            <a href="{{route('index')}}" class="btn btn-success btn-block">
                                 <i class="fas fa-calendar-check mr-2"></i> นัดหมายวันนี้
                             </a>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <a href="#" class="btn btn-info btn-block">
+                            <a href="{{ route('patient.search') }}" class="btn btn-info btn-block">
                                 <i class="fas fa-users mr-2"></i> ค้นหาผู้ป่วย
                             </a>
                         </div>
@@ -300,17 +241,5 @@
             window.location.href = url.toString();
         }
 
-        // แสดง Toast notifications อัตโนมัติเมื่อหน้าโหลด
-        document.addEventListener('DOMContentLoaded', function() {
-            // เลือก toast ทั้งหมด
-            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-
-            // แสดง toast แต่ละอัน
-            var toastList = toastElList.map(function(toastEl) {
-                var toast = new bootstrap.Toast(toastEl);
-                toast.show(); // แสดง toast
-                return toast;
-            });
-        });
     </script>
 @endpush

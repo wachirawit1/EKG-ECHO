@@ -9,6 +9,8 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\TreatmentController;
 use App\Http\Controllers\PmController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Controller;
+use App\Http\Controllers\PatientController;
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request;
@@ -19,7 +21,7 @@ Route::get('/', [MainController::class, 'index']);
 Route::get('/home', [MainController::class, 'index'])->name('home');
 
 Route::fallback(function () {
-    return "notfound naja";
+    return abort(404);
 });
 
 Route::middleware(['logged.in', 'check.session'])->group(function () {
@@ -50,17 +52,21 @@ Route::middleware(['logged.in', 'check.session'])->group(function () {
     // Route หลัก
     Route::post('/check-appointment-history', [AppointmentController::class, 'checkAppointmentHistory'])->name('appointment.checkHistory');
 
-    // PM Search
-    Route::get('/pm', [pmController::class, 'pm'])->name('pm.index');
-    Route::get('/pm_search', [pmController::class, 'pm_search'])->name('pm_search');
-
     //Auth Routes
     // แสดงนัด
     Route::get('/management', [AppointmentController::class, 'showAppointments'])->name('app.show');
     // Dashboard and Report
     Route::get('/ekg-echo', [MainController::class, 'showDashboard'])->name('index');
     Route::get('/report', [MainController::class, 'showReport'])->name('report.show');
+
+    // patient search
+    Route::get('/patient/search', [PatientController::class, 'index'])->name('patient.search');
+    Route::get('/api/patient/search', [PatientController::class, 'patientSearch'])->name('api.patient.search');
 });
+
+// PM Search
+Route::get('/pm', [pmController::class, 'pm'])->name('pm.index');
+Route::get('/pm_search', [pmController::class, 'pm_search'])->name('pm_search');
 
 Route::middleware(['logged.in', 'check.session', 'is.admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'adminPage'])->name('admin');
@@ -74,5 +80,6 @@ Route::middleware(['logged.in', 'check.session', 'is.admin'])->group(function ()
 });
 
 Auth::routes();
+
 
 Route::get('/logout', [LoginController::class, 'logout'])->name('logout');

@@ -58,6 +58,7 @@
                                 <tr>
                                     <th>ชื่อ-สกุล</th>
                                     <th>ชื่อผู้ใช้</th>
+                                    <th>ตำแหน่ง</th>
                                     <th>สิทธิ์ปัจจุบัน</th>
                                     <th>สถานะ</th>
                                     <th>การจัดการ</th>
@@ -68,6 +69,7 @@
                                     <tr>
                                         <td>{{ $user->tname . ' ' . $user->fname . ' ' . $user->lname }}</td>
                                         <td>{{ $user->username }}</td>
+                                        <td>{{ $user->position . $user->position2}}</td>
                                         <td>
                                             @if ($user->role_id === null)
                                                 <span class="badge bg-danger">ไม่มีสิทธิ์</span>
@@ -260,15 +262,26 @@
         $('input[name="search"]').on('input', function() {
             clearTimeout(pmSearchTimeout);
             const searchValue = $(this).val().trim();
+
             pmSearchTimeout = setTimeout(() => {
-                $.get("{{ route('admin.findUser') }}", {
+                let url;
+
+                if (searchValue.length > 0) {
+                    // ถ้ามีข้อความ -> ค้นหา
+                    url = "{{ route('admin.findUser') }}";
+                } else {
+                    // ถ้าว่าง -> โหลด route หลัก
+                    url = "{{ route('admin') }}";
+                }
+
+                $.get(url, {
                     search: searchValue
                 }, function(data) {
                     $('.user-result').html($(data).find('.user-result').html());
 
-                    // เรียก modal ใหม่หลังจาก load content
-                    $('.modal').modal('dispose'); // ลบ modal เก่า
-                    $('.modal').modal(); // สร้าง modal ใหม่
+                    // รีเฟรช modal
+                    $('.modal').modal('dispose');
+                    $('.modal').modal();
                 });
             }, 500);
         });
@@ -276,17 +289,17 @@
         // ฟังก์ชันสำหรับสร้าง Toast
         function createToast(message, type = 'success') {
             const toastHtml = `
-        <div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive"
-             aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
+                <div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive"
+                    aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                                aria-label="Close"></button>
+                    </div>
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-            </div>
-        </div>
-    `;
+            `;
 
             // เพิ่ม toast ใหม่ลงใน container
             $('.toast-container').append(toastHtml);

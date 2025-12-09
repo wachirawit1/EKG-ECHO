@@ -11,26 +11,29 @@ class PmController extends Controller
     {
         $allPm = DB::connection('sqlsrv2')
             ->table('vwUserInfo')
-            ->orderBy('cid', 'asc')
+            ->leftJoin('UserInfo', 'vwUserInfo.username', '=', 'UserInfo.username')
+            ->limit(20)
             ->get();
-        $correctPin = '543669';
-        return view('pm.pm', compact('allPm', 'correctPin'));
+        return view('pm.pm', compact('allPm'));
     }
     public function pm_search(Request $request)
     {
         $search = $request->input('search');
 
         $allPm = DB::connection('sqlsrv2')
-            ->table('vwUserInfo')
-            ->where('username', 'LIKE', '%' . $search . '%')
-            ->orWhere('fname', 'LIKE', '%' . $search . '%')
-            ->orWhere('lname', 'LIKE', '%' . $search . '%')
-            ->orWhere('cid', 'LIKE', '%' . $search . '%')
-            ->orWhere('position', 'LIKE', '%' . $search . '%')
-            ->orWhere('department', 'LIKE', '%' . $search . '%')
-            ->orderBy('cid', 'asc')
-            ->get();
+            ->table('vwUserInfo as v')
+            ->leftJoin('UserInfo as u', 'v.username', '=', 'u.username')
+            ->where('v.username', 'LIKE', '%' . $search . '%')
+            ->orWhere(DB::raw("v.fname + ' ' + v.lname"), 'LIKE', '%' . $search . '%')
+            ->orWhere('v.cid', 'LIKE', '%' . $search . '%')
+            ->orWhere('v.position', 'LIKE', '%' . $search . '%')
+            ->orWhere('v.department', 'LIKE', '%' . $search . '%')
+            ->select(
+                'v.*',
+                'u.birthday', // เปลี่ยนชื่อถ้าซ้ำ
 
+            )
+            ->get();
         return view('pm.pm', compact('allPm'));
     }
 }

@@ -13,7 +13,7 @@
 
     <!-- JS -->
     <link src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
-    </link>
+
 
     <!-- สำหรับ Font Awesome 5 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -250,11 +250,10 @@
                 print-color-adjust: exact;
             }
         }
-        
     </style>
 </head>
 
-<body>
+<body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-expand-lg navbar-dark custom-teal">
         <div class="container-fluid">
             @if (!session()->has('user'))
@@ -275,7 +274,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
-                                aria-current="page" href="{{ route('app.show') }}">จัดการข้อมูล</a>
+                                aria-current="page" href="{{ route('app.show') }}">การจัดการ</a>
                         </li>
 
 
@@ -306,13 +305,75 @@
             @endif
         </div>
     </nav>
-    <div class="container">
-        @yield('content')
+
+    {{-- Toast Container - วางไว้ด้านล่างขวาของหน้าจอ --}}
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+        <!-- Toast สำหรับข้อความสำเร็จ -->
+        @if (session('success'))
+            <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- Toast สำหรับข้อผิดพลาด -->
+        @if (session('error'))
+            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-triangle me-2"></i>{{ session('error') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- Toast สำหรับข้อความแจ้งเตือน -->
+        @if (session('warning'))
+            <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('warning') }}
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
+
+        <!-- Toast สำหรับข้อความทั่วไป -->
+        @if (session('info'))
+            <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive"
+                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-info-circle me-2"></i>{{ session('info') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        @endif
     </div>
 
-    <div class="container-fluid">
-        @yield('dashboardContent')
-    </div>
+    <main class="flex-grow-1">
+        <div class="container">
+            @yield('content')
+        </div>
+
+        <div class="container-fluid">
+            @yield('dashboardContent')
+        </div>
+    </main>
 
     <script src="https://kit.fontawesome.com/1b13c5849c.js" crossorigin="anonymous"></script>
 
@@ -331,13 +392,24 @@
     <script src="{{ asset('js/search.js') }}"></script>
     <script src="{{ asset('js/cursor.js') }}"></script>
     <script src="{{ asset('js/printer.js') }}"></script>
+    <script>
+        // แสดง Toast notifications อัตโนมัติเมื่อหน้าโหลด
+        document.addEventListener('DOMContentLoaded', function() {
+            // เลือก toast ทั้งหมด
+            var toastElList = [].slice.call(document.querySelectorAll('.toast'));
 
+            // แสดง toast แต่ละอัน
+            var toastList = toastElList.map(function(toastEl) {
+                var toast = new bootstrap.Toast(toastEl);
+                toast.show(); // แสดง toast
+                return toast;
+            });
+        });
+    </script>
     @stack('script')
     @stack('pmScript')
     @stack('dashboardScript')
-
-
-
+    @stack('patinetScript')
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">
@@ -345,6 +417,16 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"
         integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous">
     </script>
+
+    <!-- Footer: เครดิตและเวอร์ชัน -->
+    <footer class="bg-light text-center text-muted py-3 mt-4 mt-auto">
+        <div class="container">
+            <small>
+                © {{ date('Y') }} EKG‑ECHO — เวอร์ชัน {{ env('APP_VERSION', '1.0.0') }}.
+                พัฒนาโดย <a href="http//:192.168.10.11:8080" target="_blank" class="text-decoration-none">นาย วชิรวิทย์ กุลสุทธิชัย</a>
+            </small>
+        </div>
+    </footer>
 
 </body>
 

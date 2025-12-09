@@ -15,6 +15,8 @@ class CheckUserLogin
     public function handle(Request $request, Closure $next)
     {
         if (!session()->has('user') || session('user.logged_in') !== true) {
+
+            session(['url.intended' => url()->current()]);
             return redirect('/login')->with('error', 'กรุณาเข้าสู่ระบบก่อน');
         }
         return $next($request);

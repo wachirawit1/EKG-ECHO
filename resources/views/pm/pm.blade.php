@@ -30,6 +30,7 @@
                                     <th scope="col">บัตรประชาชน</th>
                                     <th scope="col">ชื่อ-สกุล</th>
                                     <th scope="col">ชื่อผู้ใช้</th>
+                                    <th scope="col">วัน-เดือน-ปีเกิด</th>
                                     <th scope="col">ตำแหน่ง</th>
                                     <th scope="col">กลุ่มงาน</th>
                                 </tr>
@@ -40,7 +41,8 @@
                                         <td class="fw-bold">{{ $pm->cid }}</td>
                                         <td>{{ $pm->tname . ' ' . $pm->fname . ' ' . $pm->lname }}</td>
                                         <td><span class="badge bg-info text-dark">{{ $pm->username }}</span></td>
-                                        <td>{{ $pm->position }}</td>
+                                        <td>{{ \App\Helpers\DateHelper::formatThaiDate($pm->birthday , 'full') }}</td>
+                                        <td>{{ $pm->position . $pm->position2 ?? '' }}</td>
                                         <td>{{ $pm->department }}</td>
                                     </tr>
                                 @endforeach

@@ -13,8 +13,6 @@ class AdminController extends Controller
         // users
         $users = DB::connection('sqlsrv2')
             ->table('vwUserInfo')
-            ->orderBy('cid', 'asc')
-            ->limit(10)
             ->get();
 
         $account_roles = DB::connection('mysql')
@@ -28,9 +26,16 @@ class AdminController extends Controller
 
             $user->role_id = $role->role_id ?? null;
             $user->role_name = $role->name ?? '';
+            $user->has_role = $role ? 1 : 0; // มี role = 1, ไม่มี = 0
 
             return $user;
         });
+
+        $users = $users->filter(function($user){
+            return $user->has_role === 1; // กรองเฉพาะผู้ใช้ที่มี role เท่านั้น
+        });
+
+        $users = $users->sortByDesc('has_role')->values();
 
         // roles
         $roles = DB::connection('mysql')

@@ -1,4 +1,5 @@
 <?php
+// EKG-ECHO System Refactor 2026
 
 namespace App\Http\Controllers;
 
@@ -6,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use App\Helpers\HmsHelper;
 
 class MainController extends Controller
 {
@@ -18,6 +20,7 @@ class MainController extends Controller
     // โหลดหน้า
     public function loadFragment(Request $request, $page)
     {
+        $tambonMap = collect();
         if ($page === 'appointments') {
 
             $page = is_numeric($request->query('page')) ? (int)$request->query('page') : 1;
@@ -59,7 +62,7 @@ class MainController extends Controller
 
             //ดึง hn ทั้งหมดในหน้านี้
             $hns = $appointments->pluck('hn')
-                ->map(fn($hn) => str_pad(trim(preg_replace('/\s+/', '', $hn)), 7, ' ', STR_PAD_LEFT))
+                ->map(fn($hn) => str_pad(trim($hn), 7, ' ', STR_PAD_LEFT))
                 ->unique()
                 ->toArray();
 
@@ -108,6 +111,18 @@ class MainController extends Controller
                 ->whereIn('PATIENT.hn', $hns)
                 ->get()
                 ->keyBy('hn');
+
+            // --- แก้ไข N+1: ดึงข้อมูล Tambon ครั้งเดียว ---
+            $tambonCodes = $patients->map(function ($p) {
+                return $p->regionCode . $p->tambonCode;
+            })->unique()->toArray();
+
+            $tambonMap = DB::connection('sqlsrv')
+                ->table('Tambon')
+                ->whereIn('tambonCode', $tambonCodes)
+                ->get()
+                ->keyBy('tambonCode');
+            // ------------------------------------------
 
 
             // ดึงข้อมูลแพทย์
@@ -158,7 +173,7 @@ class MainController extends Controller
             $hospcode = array_merge($buriram, $korat);
 
             // ทำ drop down หมอ
-            $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
+            $targetDoc = config('hms.target_doctors');
             $doc = DB::connection('sqlsrv')
                 ->table('DOCC')
                 ->whereIn('docCode', $targetDoc)
@@ -166,13 +181,8 @@ class MainController extends Controller
                 ->get();
 
 
-            // ทำ drop down วอร์ด
-            $excludedDeptDesc = [
-                'ยกเลิก',
-                '(ยกเลิก) พัฒนาการเด็ก',
-                '(ยกเลิก) คลินิกโรคเลือดในเด็ก',
-                '(ยกเลิก)คลินิกนมแม่',
-            ];
+            // ทำ drop down วอร์ด - ใช้ค่าจาก config
+            $excludedDeptDesc = config('hms.excluded_dept_descriptions');
 
             $dept_list = DB::connection('sqlsrv')
                 ->table('DEPT')
@@ -183,65 +193,7 @@ class MainController extends Controller
                 ->whereNotIn('deptDesc', $excludedDeptDesc)
                 ->get();
 
-            $excludedWardIds = [
-                'IQF01',
-                'IQF02',
-                'IQF03',
-                'IQF04',
-                'IQF05',
-                'IQF06',
-                'IQF07',
-                'IQF08',
-                'IQF09',
-                'IQF10',
-                'IQF11',
-                'IQF12',
-                'IQF13',
-                'IQF14',
-                'IQF15',
-                'IQF16',
-                'IQF17',
-                'IQF18',
-                'IQM01',
-                'IQM02',
-                'IQM03',
-                'IQM04',
-                'IQM05',
-                'IQM06',
-                'IQM07',
-                'IQM08',
-                'IQM09',
-                'IQM10',
-                'IQM11',
-                'IQM12',
-                'IQM13',
-                'IQM14',
-                'IQM15',
-                'IQM16',
-                'IQM17',
-                'IQM18',
-                'IQM19',
-                'IQM20',
-                'IQM21',
-                'IQM22',
-                'IQM23',
-                'IQM24',
-                'IQM25',
-                'IQM26',
-                'IQM27',
-                'IQW',
-                'IQWF8',
-                'IQWF7',
-                'IQWF6',
-                'IQWM8',
-                'IQWM7',
-                'IQWM6',
-                'IQWM5',
-                'IQWM4',
-                'IQWM3',
-                'IQWM2',
-                'IQWM1'
-            ];
+            $excludedWardIds = config('hms.excluded_ward_ids');
 
             $ward_list = DB::connection('sqlsrv')
                 ->table('Ward')
@@ -259,118 +211,66 @@ class MainController extends Controller
                 ->get();
 
             // map ช้อมูลผู้ป่วยเข้ากับ appointment
-            $appointments->transform(function ($item) use ($patients, $doctors, $depts, $wards) {
+            $appointments->transform(function ($item) use ($patients, $doctors, $depts, $wards, $tambonMap) {
                 $hn = str_pad(trim($item->hn), 7, ' ', STR_PAD_LEFT);
                 $patient = $patients[$hn] ?? null;
                 $doctor = $doctors[$item->doc_id] ?? null;
 
-                // ชื่อผู้ป่วย
+                // เตรียมชื่อผู้ป่วย
                 $item->patient_name = (trim($patient?->titleName) ?? ' ') . ' ' . ($patient?->firstName ?? ' ') . ' ' . ($patient?->lastName ?? ' ');
 
-                // ถ้าไม่พบ patient ใน SQL Server → fallback ไปใช้ MySQL
+                // Fallback ไปใช้ MySQL ถ้าไม่พบใน HIS
                 if (trim($item->patient_name) === '') {
-                    $mysqlPatient = DB::connection('mysql')
-                        ->table('patient')
-                        ->where('hn', $hn)
-                        ->first();
-
+                    $mysqlPatient = DB::connection('mysql')->table('patient')->where('hn', $hn)->first();
                     if ($mysqlPatient) {
                         $item->hospital_name = ' - รพช. ' . ($mysqlPatient->hospital_name ?? '');
-                        $item->patient_name =  ($mysqlPatient->title_name ?? '') . ' ' . ($mysqlPatient->fname ?? '') . ' ' . ($mysqlPatient->lname ?? '');
+                        $item->patient_name = ($mysqlPatient->title_name ?? '') . ' ' . ($mysqlPatient->fname ?? '') . ' ' . ($mysqlPatient->lname ?? '');
                     }
                 }
 
-                // คำนวณอายุจาก birthDay
-                // เริ่มจากค่าว่างไว้ก่อน
-                $item->age = null;
+                // คำนวณอายุจาก birthDay โดยใช้ Helper
+                $item->age = HmsHelper::calculateAge($patient?->birthDay);
 
-                // กรณีผู้ป่วยใน (SQL Server) → birthDay เป็น พ.ศ. และรูปแบบ yyyymmdd
-                if ($patient?->birthDay && strlen($patient->birthDay) === 8) {
-                    $year = (int)substr($patient->birthDay, 0, 4) - 543;
-                    $month = (int)substr($patient->birthDay, 4, 2);
-                    $day = (int)substr($patient->birthDay, 6, 2);
-
-                    try {
-                        $birthDate = Carbon::createFromDate($year, $month, $day);
-                        $item->age = $birthDate->age . ' ปี';
-                    } catch (\Exception $e) {
-                        $item->age = null;
-                    }
-                }
-
-                // กรณีผู้ป่วยนอก (MySQL) → birth_date เป็น ค.ศ. และรูปแบบ YYYY-MM-DD
-                else {
-                    $item->age = '-';
-                }
-
-                // ที่อยู่
-                // ถ้า $patient เป็น null ให้ใช้ default ค่าเป็นค่าว่าง
+                // จัดการที่อยู่ (ใช้ tambonMap เพื่อประสิทธิภาพ)
                 if ($patient) {
                     $tambonCode = $patient->regionCode . $patient->tambonCode;
-                    $tambon = DB::connection('sqlsrv')->table('Tambon')->where('tambonCode', $tambonCode)->first();
-                    $tambonName = trim($tambon->tambonName ?? '');  // ใช้ trim() เพื่อลบช่องว่างเกิน
+                    $tambon = $tambonMap[$tambonCode] ?? null;
+                    $tambonName = trim($tambon->tambonName ?? '');
 
-                    // กำหนดที่อยู่โดยใช้ trim() กับแต่ละฟิลด์
                     $addrParts = [
                         trim($patient->addr1),
-                        $patient->moo ? 'หมู่ ' . trim($patient->moo) : '',   // ถ้ามีค่า moo ให้ใช้ trim()
-                        $patient->addr2 ? 'ถ.' . trim($patient->addr2) : '',    // ถ้ามีค่า addr2 ให้ใช้ trim()
-                        $tambonName ? 'ต.' . $tambonName : '',                 // ถ้ามี tambonName ให้ใช้ trim()
-                        $patient->regionName ? 'อ.' . trim($patient->regionName) : '', // ถ้ามีค่า regionName ให้ใช้ trim()
-                        $patient->areaName ? 'จ.' . trim($patient->areaName) : '',   // ถ้ามีค่า areaName ให้ใช้ trim()
-                        trim($patient->postalCode),  // ตัดช่องว่างรอบ postalCode
+                        $patient->moo ? 'หมู่ ' . trim($patient->moo) : '',
+                        $patient->addr2 ? 'ถ.' . trim($patient->addr2) : '',
+                        $tambonName ? 'ต.' . $tambonName : '',
+                        $patient->regionName ? 'อ.' . trim($patient->regionName) : '',
+                        $patient->areaName ? 'จ.' . trim($patient->areaName) : '',
+                        trim($patient->postalCode),
                     ];
-
-                    // กรองข้อมูลที่ว่างออกจาก $addrParts
                     $item->address = implode(' ', array_filter($addrParts));
                 } else {
                     $item->address = 'ไม่พบข้อมูลที่อยู่';
                 }
 
-
-
                 // ชื่อแพทย์
                 $item->doctor_name = ($doctor?->doctitle ?? '') . ' ' . ($doctor?->docName ?? 'ไม่ระบุ') . ' ' . ($doctor?->docLName ?? '');
 
                 // ชื่อแผนก/วอร์ด
-                // ชื่อแผนก/วอร์ด - แก้ไขการดึงค่า ward code
                 $wardRaw = $item->ward ?? '';
-                $wardCode = '';
-                $isDept = false;
-
-                // ตรวจสอบกรณีที่ไม่มีข้อมูลหรือเป็น none
                 if (empty($wardRaw) || trim(strtolower($wardRaw)) === 'none' || trim($wardRaw) === '-') {
                     $item->dept_name = '-';
-                }
-                // ตรวจสอบว่าเป็น dept: หรือ ward:
-                elseif (strpos($wardRaw, 'dept:') !== false) {
-                    $wardCode = trim(str_replace('dept:', '', $wardRaw));
-                    $isDept = true;
-
-                    // ค้นหาชื่อแผนก
-                    $item->dept_name = isset($depts[$wardCode]) ? trim($depts[$wardCode]->deptDesc) :
-                        'ไม่พบข้อมูลแผนก (Code: ' . $wardCode . ')';
-                } elseif (strpos($wardRaw, 'ward:') !== false) {
-                    $wardCode = trim(str_replace('ward:', '', $wardRaw));
-                    $isDept = false;
-
-                    // ค้นหาชื่อวอร์ด
-                    $item->dept_name = isset($wards[$wardCode]) ? trim($wards[$wardCode]->ward_name) :
-                        'ไม่พบข้อมูลวอร์ด (Code: ' . $wardCode . ')';
                 } else {
-                    // กรณีไม่มี prefix dept: หรือ ward:
-                    $wardCode = trim($wardRaw);
-
-                    if (empty($wardCode)) {
-                        $item->dept_name = '-';
+                    $wardCode = trim(str_replace(['dept:', 'ward:'], '', $wardRaw));
+                    if (strpos($wardRaw, 'dept:') !== false) {
+                        $item->dept_name = isset($depts[$wardCode]) ? trim($depts[$wardCode]->deptDesc) : "แผนก ($wardCode)";
+                    } elseif (strpos($wardRaw, 'ward:') !== false) {
+                        $item->dept_name = isset($wards[$wardCode]) ? trim($wards[$wardCode]->ward_name) : "วอร์ด ($wardCode)";
                     } else {
-                        // ลองหาใน ward ก่อน แล้วค่อยหาใน dept
                         if (isset($wards[$wardCode])) {
                             $item->dept_name = trim($wards[$wardCode]->ward_name);
                         } elseif (isset($depts[$wardCode])) {
                             $item->dept_name = trim($depts[$wardCode]->deptDesc);
                         } else {
-                            $item->dept_name = 'ไม่พบข้อมูล (Code: ' . $wardCode . ')';
+                            $item->dept_name = "- ($wardCode)";
                         }
                     }
                 }
@@ -409,7 +309,7 @@ class MainController extends Controller
 
             //ดึง hn ทั้งหมดในหน้านี้
             $hns = $treatments->pluck('hn')
-                ->map(fn($hn) => str_pad(trim(preg_replace('/\s+/', '', $hn)), 7, ' ', STR_PAD_LEFT))
+                ->map(fn($hn) => str_pad(trim($hn), 7, ' ', STR_PAD_LEFT))
                 ->filter(fn($hn) => trim($hn) !== '') // ตัดพวก hn ว่างล้วนออก
                 ->unique()
                 ->toArray();
@@ -455,6 +355,11 @@ class MainController extends Controller
                 ->get()
                 ->keyBy('hn');
 
+            // --- แก้ไข N+1: ดึงข้อมูล Tambon ครั้งเดียว (Treatments) ---
+            $tambonCodesT = $patients->map(fn($p) => $p->regionCode . $p->tambonCode)->unique()->filter()->toArray();
+            $tambonMap = DB::connection('sqlsrv')->table('Tambon')->whereIn('tambonCode', $tambonCodesT)->get()->keyBy('tambonCode');
+            // ----------------------------------------------------
+
             // ดึงข้อมูลวอร์ด
             $depts = DB::connection('sqlsrv')
                 ->table('DEPT')
@@ -472,13 +377,8 @@ class MainController extends Controller
                     return trim($item->ward_id); // trim ทั้งซ้ายและขวา
                 });
 
-            // ทำ drop down วอร์ด
-            $excludedDeptDesc = [
-                'ยกเลิก',
-                '(ยกเลิก) พัฒนาการเด็ก',
-                '(ยกเลิก) คลินิกโรคเลือดในเด็ก',
-                '(ยกเลิก)คลินิกนมแม่',
-            ];
+            // ทำ drop down วอร์ด - ใช้ค่าจาก config
+            $excludedDeptDesc = config('hms.excluded_dept_descriptions');
 
             $dept_list = DB::connection('sqlsrv')
                 ->table('DEPT')
@@ -489,65 +389,7 @@ class MainController extends Controller
                 ->whereNotIn('deptDesc', $excludedDeptDesc)
                 ->get();
 
-            $excludedWardIds = [
-                'IQF01',
-                'IQF02',
-                'IQF03',
-                'IQF04',
-                'IQF05',
-                'IQF06',
-                'IQF07',
-                'IQF08',
-                'IQF09',
-                'IQF10',
-                'IQF11',
-                'IQF12',
-                'IQF13',
-                'IQF14',
-                'IQF15',
-                'IQF16',
-                'IQF17',
-                'IQF18',
-                'IQM01',
-                'IQM02',
-                'IQM03',
-                'IQM04',
-                'IQM05',
-                'IQM06',
-                'IQM07',
-                'IQM08',
-                'IQM09',
-                'IQM10',
-                'IQM11',
-                'IQM12',
-                'IQM13',
-                'IQM14',
-                'IQM15',
-                'IQM16',
-                'IQM17',
-                'IQM18',
-                'IQM19',
-                'IQM20',
-                'IQM21',
-                'IQM22',
-                'IQM23',
-                'IQM24',
-                'IQM25',
-                'IQM26',
-                'IQM27',
-                'IQW',
-                'IQWF8',
-                'IQWF7',
-                'IQWF6',
-                'IQWM8',
-                'IQWM7',
-                'IQWM6',
-                'IQWM5',
-                'IQWM4',
-                'IQWM3',
-                'IQWM2',
-                'IQWM1'
-            ];
+            $excludedWardIds = config('hms.excluded_ward_ids');
 
             $ward_list = DB::connection('sqlsrv')
                 ->table('Ward')
@@ -565,158 +407,56 @@ class MainController extends Controller
                 ->get();
 
             // map ช้อมูลผู้ป่วยเข้ากับ treatment
-            $treatments->transform(function ($item) use ($patients, $depts, $wards) {
+            $treatments->transform(function ($item) use ($patients, $depts, $wards, $tambonMap) {
                 $hn = str_pad(trim($item->hn), 7, ' ', STR_PAD_LEFT);
                 $patient = $patients[$hn] ?? null;
 
-                // ชื่อผู้ป่วย
+                // เตรียมชื่อผู้ป่วย
                 $item->patient_name = (trim($patient?->titleName) ?? ' ') . ' ' . ($patient?->firstName ?? ' ') . ' ' . ($patient?->lastName ?? ' ');
 
-                // ถ้าไม่พบ patient ใน SQL Server → fallback ไปใช้ MySQL
+                // Fallback ไปใช้ MySQL ถ้าไม่พบใน HIS
                 if (trim($item->patient_name) === '') {
-                    $mysqlPatient = DB::connection('mysql')
-                        ->table('patient')
-                        ->where('hn', $hn)
-                        ->first();
-
+                    $mysqlPatient = DB::connection('mysql')->table('patient')->where('hn', $hn)->first();
                     if ($mysqlPatient) {
                         $item->patient_name = ($mysqlPatient->title_name ?? '') . ' ' . ($mysqlPatient->fname ?? '') . ' ' . ($mysqlPatient->lname ?? '');
                         $item->hospital_name = $mysqlPatient->hospital_name ?? '';
                     }
                 }
 
-                // คำนวณอายุจาก birthDay
-                // เริ่มจากค่าว่างไว้ก่อน
-                $item->age = null;
+                // คำนวณอายุจาก birthDay โดยใช้ Helper
+                $item->age = HmsHelper::calculateAge($patient?->birthDay);
 
-                // กรณีผู้ป่วยใน (SQL Server) → birthDay เป็น พ.ศ. และรูปแบบ yyyymmdd
-                if ($patient?->birthDay && strlen($patient->birthDay) === 8) {
-                    $year = (int)substr($patient->birthDay, 0, 4) - 543;
-                    $month = (int)substr($patient->birthDay, 4, 2);
-                    $day = (int)substr($patient->birthDay, 6, 2);
-
-                    try {
-                        $birthDate = Carbon::createFromDate($year, $month, $day);
-                        $item->age = $birthDate->age . ' ปี';
-                    } catch (\Exception $e) {
-                        $item->age = null;
-                    }
-                }
-
-                // กรณีผู้ป่วยนอก (MySQL) → birth_date เป็น ค.ศ. และรูปแบบ YYYY-MM-DD
-                else {
-                    $item->age = '-';
-                }
-
-                // ที่อยู่
-                // ถ้า $patient เป็น null ให้ใช้ default ค่าเป็นค่าว่าง
+                // จัดการที่อยู่ (ใช้ tambonMap เพื่อประสิทธิภาพ)
                 if ($patient) {
                     $tambonCode = $patient->regionCode . $patient->tambonCode;
-                    $tambon = DB::connection('sqlsrv')->table('Tambon')->where('tambonCode', $tambonCode)->first();
-                    $tambonName = trim($tambon->tambonName ?? '');  // ใช้ trim() เพื่อลบช่องว่างเกิน
+                    $tambon = $tambonMap[$tambonCode] ?? null;
+                    $tambonName = trim($tambon->tambonName ?? '');
 
-                    // กำหนดที่อยู่โดยใช้ trim() กับแต่ละฟิลด์
                     $addrParts = [
                         trim($patient->addr1),
-                        $patient->moo ? 'หมู่ ' . trim($patient->moo) : '',   // ถ้ามีค่า moo ให้ใช้ trim()
-                        $patient->addr2 ? 'ถ.' . trim($patient->addr2) : '',    // ถ้ามีค่า addr2 ให้ใช้ trim()
-                        $tambonName ? 'ต.' . $tambonName : '',                 // ถ้ามี tambonName ให้ใช้ trim()
-                        $patient->regionName ? 'อ.' . trim($patient->regionName) : '', // ถ้ามีค่า regionName ให้ใช้ trim()
-                        $patient->areaName ? 'จ.' . trim($patient->areaName) : '',   // ถ้ามีค่า areaName ให้ใช้ trim()
-                        trim($patient->postalCode),  // ตัดช่องว่างรอบ postalCode
+                        $patient->moo ? 'หมู่ ' . trim($patient->moo) : '',
+                        $patient->addr2 ? 'ถ.' . trim($patient->addr2) : '',
+                        $tambonName ? 'ต.' . $tambonName : '',
+                        $patient->regionName ? 'อ.' . trim($patient->regionName) : '',
+                        $patient->areaName ? 'จ.' . trim($patient->areaName) : '',
+                        trim($patient->postalCode),
                     ];
-
-                    // กรองข้อมูลที่ว่างออกจาก $addrParts
                     $item->address = implode(' ', array_filter($addrParts));
                 } else {
                     $item->address = 'ไม่พบข้อมูลที่อยู่';
                 }
 
-                // ชื่อแผนก/วอร์ด สำหรับ agency
-                // ชื่อแผนก/วอร์ด - แก้ไขการดึงค่า agency code
-                $agencyRaw = $item->agency ?? '';
-                $agencyCode = '';
-                $isDept = false;
+                // จัดการชื่อแผนก/วอร์ด (Agency และ Forward)
+                $processDept = function ($rawCode) use ($depts, $wards) {
+                    if (empty($rawCode) || trim(strtolower($rawCode)) === 'none' || trim($rawCode) === '-') return '-';
+                    $code = trim(str_replace(['dept:', 'ward:'], '', $rawCode));
+                    if (strpos($rawCode, 'dept:') !== false) return isset($depts[$code]) ? trim($depts[$code]->deptDesc) : "แผนก ($code)";
+                    if (strpos($rawCode, 'ward:') !== false) return isset($wards[$code]) ? trim($wards[$code]->ward_name) : "วอร์ด ($code)";
+                    return isset($wards[$code]) ? trim($wards[$code]->ward_name) : (isset($depts[$code]) ? trim($depts[$code]->deptDesc) : "- ($code)");
+                };
 
-                // ตรวจสอบกรณีที่ไม่มีข้อมูลหรือเป็น none
-                if (empty($agencyRaw) || trim(strtolower($agencyRaw)) === 'none' || trim($agencyRaw) === '-') {
-                    $item->agency_name = '-';
-                }
-                // ตรวจสอบว่าเป็น dept: หรือ ward:
-                elseif (strpos($agencyRaw, 'dept:') !== false) {
-                    $agencyCode = trim(str_replace('dept:', '', $agencyRaw));
-                    $isDept = true;
-
-                    // ค้นหาชื่อแผนก
-                    $item->agency_name = isset($depts[$agencyCode]) ? trim($depts[$agencyCode]->deptDesc) :
-                        'ไม่พบข้อมูลแผนก (Code: ' . $agencyCode . ')';
-                } elseif (strpos($agencyRaw, 'ward:') !== false) {
-                    $agencyCode = trim(str_replace('ward:', '', $agencyRaw));
-                    $isDept = false;
-
-                    // ค้นหาชื่อวอร์ด
-                    $item->agency_name = isset($wards[$agencyCode]) ? trim($wards[$agencyCode]->ward_name) :
-                        'ไม่พบข้อมูลวอร์ด (Code: ' . $agencyCode . ')';
-                } else {
-                    // กรณีไม่มี prefix dept: หรือ ward:
-                    $agencyCode = trim($agencyRaw);
-
-                    if (empty($agencyCode)) {
-                        $item->agency_name = '-';
-                    } else {
-                        // ลองหาใน ward ก่อน แล้วค่อยหาใน dept
-                        if (isset($wards[$agencyCode])) {
-                            $item->agency_name = trim($wards[$agencyCode]->ward_name);
-                        } elseif (isset($depts[$agencyCode])) {
-                            $item->agency_name = trim($depts[$agencyCode]->deptDesc);
-                        } else {
-                            $item->agency_name = 'ไม่พบข้อมูล (Code: ' . $agencyCode . ')';
-                        }
-                    }
-                }
-
-                // ชื่อแผนก/วอร์ด สำหรับ forward
-                // ชื่อแผนก/วอร์ด - แก้ไขการดึงค่า forward code
-                $forwardRaw = $item->forward ?? '';
-                $forwardCode = '';
-                $isDept = false;
-
-                // ตรวจสอบกรณีที่ไม่มีข้อมูลหรือเป็น none
-                if (empty($forwardRaw) || trim(strtolower($forwardRaw)) === 'none' || trim($forwardRaw) === '-') {
-                    $item->forward_name = '-';
-                }
-                // ตรวจสอบว่าเป็น dept: หรือ ward:
-                elseif (strpos($forwardRaw, 'dept:') !== false) {
-                    $forwardCode = trim(str_replace('dept:', '', $forwardRaw));
-                    $isDept = true;
-
-                    // ค้นหาชื่อแผนก
-                    $item->forward_name = isset($depts[$forwardCode]) ? trim($depts[$forwardCode]->deptDesc) :
-                        'ไม่พบข้อมูลแผนก (Code: ' . $forwardCode . ')';
-                } elseif (strpos($forwardRaw, 'ward:') !== false) {
-                    $forwardCode = trim(str_replace('ward:', '', $forwardRaw));
-                    $isDept = false;
-
-                    // ค้นหาชื่อวอร์ด
-                    $item->forward_name = isset($wards[$forwardCode]) ? trim($wards[$forwardCode]->ward_name) :
-                        'ไม่พบข้อมูลวอร์ด (Code: ' . $forwardCode . ')';
-                } else {
-                    // กรณีไม่มี prefix dept: หรือ ward:
-                    $forwardCode = trim($forwardRaw);
-
-                    if (empty($forwardCode)) {
-                        $item->forward_name = '-';
-                    } else {
-                        // ลองหาใน ward ก่อน แล้วค่อยหาใน dept
-                        if (isset($wards[$forwardCode])) {
-                            $item->forward_name = trim($wards[$forwardCode]->ward_name);
-                        } elseif (isset($depts[$forwardCode])) {
-                            $item->forward_name = trim($depts[$forwardCode]->deptDesc);
-                        } else {
-                            $item->forward_name = 'ไม่พบข้อมูล (Code: ' . $forwardCode . ')';
-                        }
-                    }
-                }
+                $item->agency_name = $processDept($item->agency ?? '');
+                $item->forward_name = $processDept($item->forward ?? '');
 
                 return $item;
             });
@@ -733,25 +473,33 @@ class MainController extends Controller
 
     function generateHospitalAbbreviation($hospitalName)
     {
-        // ตัดคำที่ไม่จำเป็นออก
-        $words = preg_replace('/^(โรงพยาบาล)/u', '', $hospitalName);
-        $words = preg_split('/\s+/u', trim($words)); // ตัดตามช่องว่าง
-
-        $abbr = '';
-        foreach ($words as $word) {
-            $abbr .= mb_substr($word, 0, 1, "UTF-8"); // เอาอักษรตัวแรกของแต่ละคำ
-        }
-
-        return strtoupper($abbr);
+        return HmsHelper::generateHospitalAbbreviation($hospitalName);
     }
 
     // add new patient
     public function addPatient(Request $request)
     {
+        // 1. Validation
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'fname'         => 'required',
+            'lname'         => 'required',
+            'titleName'     => 'required',
+            'hospital_name' => 'required',
+        ], [
+            'required' => 'กรุณากรอกข้อมูลให้ครบถ้วน',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('message', [
+                'status'  => 0,
+                'title'   => 'ข้อมูลไม่ครบถ้วน',
+                'message' => 'กรุณาระบุชื่อ นามสกุล คำนำหน้า และโรงพยาบาล'
+            ]);
+        }
 
         $hospital_name = $request->input('hospital_name');
-        $fname = $request->input('fname');
-        $lname = $request->input('lname');
+        $fname = trim($request->input('fname'));
+        $lname = trim($request->input('lname'));
         $titleName = $request->input('titleName');
 
         // ตรวจสอบผู้ป่วยซ้ำ
@@ -774,7 +522,7 @@ class MainController extends Controller
         DB::beginTransaction();
         try {
             // gen hn
-            $prefix = $this->generateHospitalAbbreviation($hospital_name);
+            $prefix = HmsHelper::generateHospitalAbbreviation($hospital_name);
             $lastHN = DB::connection('mysql')
                 ->table('patient')
                 ->where('hn', 'like', $prefix . '%')
@@ -854,7 +602,7 @@ class MainController extends Controller
     // แสดงหน้า dashboard
     public function showDashboard(Request $request)
     {
-        $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
+        $targetDoc = config('hms.target_doctors');
 
         //  วันที่ที่ใช้ฟิลเตอร์
         $selected = $request->filled('dateFilter')
@@ -1080,7 +828,7 @@ class MainController extends Controller
     // แสดงหน้า report
     public function showReport()
     {
-        $targetDoc = [' 21116', ' 22947', ' 26587', ' 33166', ' 34559', ' 37288', ' 36155', ' 34916'];
+        $targetDoc = config('hms.target_doctors');
         $today = Carbon::now();
         $todayThai = ($today->year + 543) . $today->format('md');
 

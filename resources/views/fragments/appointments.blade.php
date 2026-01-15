@@ -38,7 +38,7 @@
     {{-- Section: Search & Add --}}
     <form id="searchForm" class="d-flex gap-2" onsubmit="searchAppointments(event)">
 
-        <input  class="form-control" id="start_date" name="start_date" value="{{ request('start_date') }}"
+        <input class="form-control" id="start_date" name="start_date" value="{{ request('start_date') }}"
             placeholder="วันที่เริ่ม"> -
 
         <input class="form-control" id="end_date" name="end_date" value="{{ request('end_date') }}"
@@ -140,9 +140,13 @@
                     @foreach ($data as $index => $item)
                         <tr>
                             <td>{{ ($page - 1) * $perPage + $index + 1 }}</td>
-                            <td>{{ formatThaiDate($item->a_date) }}</td>
+                            <td
+                                title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
+                                {{ formatThaiDate($item->a_date) }}</td>
                             <td>{{ $item->hn }}</td>
-                            <td>{{ $item->patient_name ?? '-' }}</td>
+                            <td
+                                title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
+                                {{ $item->patient_name ?? '-' }}</td>
                             <td>{{ $item->dept_name }}</td>
                             <td>{{ $item->doctor_name }}</td>
                             <td>{{ $item->note ?? '-' }}</td>
@@ -248,6 +252,13 @@
                                                         <textarea class="form-control" name="note" id="note{{ $item->a_id }}" rows="3" readonly>{{ $item->note }}</textarea>
                                                     </div>
                                                 </form>
+
+                                                <div class="mt-4 pt-2 border-top text-muted small">
+                                                    <i class="fas fa-history me-1"></i>
+                                                    เพิ่มเมื่อ:
+                                                    {{ $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : '-' }}
+                                                    โดย: {{ $item->created_by ?? 'ระบบเดิม' }}
+                                                </div>
                                             </div>
 
                                             <!-- Modal Footer -->

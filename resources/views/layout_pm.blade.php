@@ -28,10 +28,16 @@
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
-    {{-- favicon --}}
-    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    {{-- favicon: Changed for PM Page --}}
+    {{-- <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon"> --}}
 
     <style>
+        /* Custom PM Styles */
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        /* Keep original styles for modal/alert/etc */
         .btn-toggle {
             background-color: #e9ecef;
             color: #495057;
@@ -66,14 +72,12 @@
 
         .btn-teal {
             background-color: #14B8A6;
-            /* teal-500 */
             color: #fff;
             border: none;
         }
 
         .btn-teal:hover {
             background-color: #0f766e;
-            /* teal-700 */
             color: #fff;
         }
 
@@ -92,15 +96,11 @@
             color: white;
         }
 
-
         .page-item.active .page-link:disabled {
             color: white;
             cursor: not-allowed;
         }
 
-
-
-        /* CSS สำหรับแสดงการแจ้งเตือนประวัติการนัด */
         #appointment-alert {
             border-left: 4px solid;
             border-radius: 6px;
@@ -143,7 +143,6 @@
             }
         }
 
-        /* ปรับแต่ง input fields */
         .form-control.is-invalid {
             border-color: #dc3545;
             box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
@@ -157,7 +156,6 @@
             color: #dc3545;
         }
 
-        /* Animation สำหรับการ enable/disable fields */
         .form-control:disabled {
             background-color: #f8f9fa;
             opacity: 0.6;
@@ -168,13 +166,11 @@
             transition: all 0.2s ease;
         }
 
-        /* ปุ่ม radio ที่ disabled */
         input[type="radio"]:disabled+label {
             opacity: 0.6;
             cursor: not-allowed;
         }
 
-        /* Select2 disabled state */
         .select2-container--disabled .select2-selection {
             background-color: #f8f9fa !important;
             opacity: 0.6;
@@ -185,12 +181,9 @@
             background-color: #f8f9fa !important;
             opacity: 0.6;
             color: #6c757d;
-            /* ตัวหนังสือสีเทาอ่อน */
             cursor: default;
         }
 
-
-        /* Loading state สำหรับ HN input */
         .hn-loading {
             position: relative;
         }
@@ -218,99 +211,23 @@
                 transform: translateY(-50%) rotate(360deg);
             }
         }
-
-        /* เพิ่ม CSS สำหรับ PDF */
-        .pdf-preview-container {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .printable-content {
-            background: white;
-            padding: 20px;
-            font-family: 'Sarabun', sans-serif;
-        }
-
-        .printable-content .form-label {
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .printable-content .form-control {
-            border: 1px solid #ddd;
-            background-color: #f8f9fa;
-        }
-
-        /* สำหรับ print preview */
-        @media print {
-            .printable-content {
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
     </style>
-    <!-- Custom Theme CSS (Safe Mode) -->
-    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
 </head>
 
 <body class="d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg navbar-dark custom-teal">
+    <!-- PM Specific Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
         <div class="container-fluid">
-            @if (!session()->has('user'))
-                <a class="navbar-brand" href="#">PM</a>
-            @endif
-            @if (session()->has('user'))
-                <a class="navbar-brand" href="#">EKG-ECHO</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse " id="navbarSupportedContent">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link  {{ Route::currentRouteName() == 'index' || Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
-                                aria-current="page" href="{{ route('index') }}">หน้าแรก</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
-                                aria-current="page" href="{{ route('app.show') }}">การจัดการ</a>
-                        </li>
-
-
-
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                {{ session('user.fullname') }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                @if (session('user.role') == 'Admin')
-                                    <li><a class="dropdown-item" href="{{ route('admin') }}">จัดการผู้ใช้</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                @endif
-                                <li>
-                                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="dropdown-item">ออกจากระบบ</button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                </div>
-            @endif
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-search me-2"></i>ระบบค้นหา PM
+            </a>
+            
+            {{-- Optional: Add simplistic User info if authenticated, or removed entirely --}}
         </div>
     </nav>
 
-    {{-- Toast Container - วางไว้ด้านล่างขวาของหน้าจอ --}}
+    {{-- Toast Container --}}
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-        <!-- Toast สำหรับข้อความสำเร็จ -->
         @if (session('success'))
             <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
                 aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
@@ -323,8 +240,6 @@
                 </div>
             </div>
         @endif
-
-        <!-- Toast สำหรับข้อผิดพลาด -->
         @if (session('error'))
             <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive"
                 aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
@@ -337,73 +252,32 @@
                 </div>
             </div>
         @endif
-
-        <!-- Toast สำหรับข้อความแจ้งเตือน -->
-        @if (session('warning'))
-            <div class="toast align-items-center text-bg-warning border-0" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-exclamation-circle me-2"></i>{{ session('warning') }}
-                    </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-
-        <!-- Toast สำหรับข้อความทั่วไป -->
-        @if (session('info'))
-            <div class="toast align-items-center text-bg-info border-0" role="alert" aria-live="assertive"
-                aria-atomic="true" data-bs-autohide="true" data-bs-delay="5000">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-info-circle me-2"></i>{{ session('info') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-                        aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
     </div>
 
     <main class="flex-grow-1">
         <div class="container-fluid">
             @yield('content')
         </div>
-
-        <div class="container-fluid">
-            @yield('dashboardContent')
-        </div>
     </main>
 
+    <!-- JS -->
     <script src="https://kit.fontawesome.com/1b13c5849c.js" crossorigin="anonymous"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/l10n/th.js"></script>
-
-    <!-- เพิ่ม JavaScript สำหรับ PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    {{-- jquery --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {{-- select2 js --}}
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <!-- Core Scripts -->
     <script src="{{ asset('js/loadPage.js') }}"></script>
     <script scr="{{ asset('js/appointCheck.js') }}"></script>
     <script src="{{ asset('js/search.js') }}"></script>
     <script src="{{ asset('js/cursor.js') }}"></script>
-    <script src="{{ asset('js/printer.js') }}"></script>
     <script>
-        // แสดง Toast notifications อัตโนมัติเมื่อหน้าโหลด
         document.addEventListener('DOMContentLoaded', function() {
-            // เลือก toast ทั้งหมด
             var toastElList = [].slice.call(document.querySelectorAll('.toast'));
-
-            // แสดง toast แต่ละอัน
             var toastList = toastElList.map(function(toastEl) {
                 var toast = new bootstrap.Toast(toastEl);
-                toast.show(); // แสดง toast
+                toast.show();
                 return toast;
             });
         });
@@ -411,7 +285,6 @@
     @stack('script')
     @stack('pmScript')
     @stack('dashboardScript')
-    @stack('patientScript')
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous">
@@ -419,18 +292,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js"
         integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous">
     </script>
-
-    <!-- Footer: เครดิตและเวอร์ชัน -->
-    <footer class="bg-light text-center text-muted py-3 mt-4 mt-auto">
-        <div class="container">
-            <small>
-                © {{ date('Y') }} EKG‑ECHO — เวอร์ชัน {{ env('APP_VERSION', '1.0.0') }}.
-                พัฒนาโดย <a href="http//:192.168.10.11:8080" target="_blank" class="text-decoration-none">นาย
-                    วชิรวิทย์ กุลสุทธิชัย</a>
-            </small>
-        </div>
-    </footer>
-
+    
+    {{-- No Footer --}}
 </body>
 
 </html>

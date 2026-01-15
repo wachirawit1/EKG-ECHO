@@ -96,7 +96,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้</label>
                     <input type="text" name="username" value="{{ old('username') }}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('username') border-red-500 @enderror"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 @error('username') border-red-500 @enderror"
                         autofocus autocomplete="username" />
                     @error('username')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -108,7 +108,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
                     <div class="relative">
                         <input type="password" name="password" value="{{ $errors->any() ? old('password') : '' }}"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('password') border-red-500 @enderror"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 @error('password') border-red-500 @enderror"
                             autocomplete="current-password" id="passwordInput" />
                         <button type="button"
                             class="absolute inset-y-0 right-0 pr-3 flex items-center justify-center h-full text-gray-400 hover:text-gray-600"
@@ -127,7 +127,7 @@
 
                 <!-- ปุ่มเข้าสู่ระบบ -->
                 <button type="submit"
-                    class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200">
+                    class="w-full bg-teal-600 text-white py-2 px-4 rounded-lg hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 transition duration-200">
                     เข้าสู่ระบบ
                 </button>
             </form>
@@ -135,7 +135,8 @@
 
         <!-- Footer -->
         <div class="text-center mt-6 text-gray-500 text-sm">
-            <p>© {{ date('Y') }} EKG‑ECHO — เวอร์ชัน {{ env('APP_VERSION', '1.0.0') }}. พัฒนาโดย นายวชิรวิทย์ กุลสุทธิชัย </p>
+            <p>© {{ date('Y') }} EKG‑ECHO — เวอร์ชัน {{ env('APP_VERSION', '1.0.0') }}. พัฒนาโดย นายวชิรวิทย์
+                กุลสุทธิชัย </p>
         </div>
     </div>
 

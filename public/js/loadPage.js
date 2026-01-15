@@ -1,4 +1,7 @@
 function togglePage(page) {
+    // บันทึกแท็บปัจจุบันลง localStorage เพื่อให้จำได้หลัง redirect
+    localStorage.setItem("currentManagementTab", page);
+
     loadPage(page);
 
     // ปรับคลาส active
@@ -70,9 +73,20 @@ function setupSelect2InModal() {
     $("#addAppointment").on("shown.bs.modal", function () {
         if (!isSelect2Initialized) {
             $("#wardSelect").select2({
-                theme: "bootstrap-5", 
+                theme: "bootstrap-5",
                 dropdownParent: $("#addAppointment .modal-body"),
                 width: "100%",
+            });
+
+            // โฟกัสช่องค้นหาอัตโนมัติเมื่อเปิด dropdown
+            $("#wardSelect").on("select2:open", function () {
+                setTimeout(function () {
+                    document
+                        .querySelector(
+                            ".select2-container--open .select2-search__field"
+                        )
+                        ?.focus();
+                }, 10);
             });
 
             isSelect2Initialized = true;
@@ -96,6 +110,17 @@ function setupSelect2InModal1() {
             theme: "bootstrap-5",
             dropdownParent: $("#addTreatment .modal-body"),
             width: "100%",
+        });
+
+        // โฟกัสช่องค้นหาอัตโนมัติเมื่อเปิด dropdown
+        $("#agency, #forward").on("select2:open", function () {
+            setTimeout(function () {
+                document
+                    .querySelector(
+                        ".select2-container--open .select2-search__field"
+                    )
+                    ?.focus();
+            }, 10);
         });
     });
 

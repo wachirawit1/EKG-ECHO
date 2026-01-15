@@ -4,14 +4,33 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class TreatmentController extends Controller
 {
-
-
     // เพิ่มการมารักษา
     public function addTreatment(Request $request)
     {
+        // 1. Validation
+        $validator = Validator::make($request->all(), [
+            't_date' => 'required',
+            'resource' => 'required|in:in,out',
+            'hn' => 'required_if:resource,in',
+            'fname' => 'required_if:resource,out',
+            'lname' => 'required_if:resource,out',
+        ], [
+            'required' => 'กรุณากรอกข้อมูลให้ครบถ้วน',
+            'required_if' => 'กรุณากรอกข้อมูลผู้ป่วยให้ครบถ้วน',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('message', [
+                'status' => 0,
+                'title' => 'ข้อมูลไม่ครบถ้วน',
+                'message' => 'กรุณาตรวจสอบข้อมูลที่ระบุ'
+            ]);
+        }
+
         $resource = $request->input('resource');
         if ($resource === 'in') {
             $hn = str_pad(trim(preg_replace('/\s+/', '', $request->input('hn'))), 7, ' ', STR_PAD_LEFT);
@@ -49,12 +68,14 @@ class TreatmentController extends Controller
             $hn = $existing->hn;
         }
 
-        // Insert ลงตาราง treatment
+        // Insert ลงตาราง treatment พร้อมข้อมูล Audit
         $insert = DB::connection('mysql')->table('treatment')->insert([
-            'hn' => $hn,
-            't_date' => $request->input('t_date'),
-            'agency' => str_pad(trim($request->input('agency')), 11, ' ', STR_PAD_RIGHT),
-            'forward' => str_pad(trim($request->input('forward')), 11, ' ', STR_PAD_RIGHT),
+            'hn'         => $hn,
+            't_date'     => $request->input('t_date'),
+            'agency'     => str_pad(trim($request->input('agency')), 11, ' ', STR_PAD_RIGHT),
+            'forward'    => str_pad(trim($request->input('forward')), 11, ' ', STR_PAD_RIGHT),
+            'created_at' => now(),
+            'created_by' => session('user.fullname') ?? session('user.username'),
         ]);
 
         $message = $insert
@@ -70,8 +91,6 @@ class TreatmentController extends Controller
         $delete = DB::table('treatment')
             ->where('t_id', $t_id)
             ->delete();
-
-        $message = [];
 
         if ($delete) {
             $message = [

@@ -82,4 +82,4 @@ Route::middleware(['logged.in', 'check.session', 'is.admin'])->group(function ()
 Auth::routes();
 
 
-Route::get('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

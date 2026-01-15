@@ -1,0 +1,100 @@
+/* EKG-ECHO Premium Theme - Safe Mode */
+
+/* 1. Global Typography */
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Sarabun', sans-serif !important;
+    background-color: #f8f9fa; /* Light Gray Background */
+}
+
+/* 2. Navbar Consistency */
+.navbar.custom-teal {
+    background: linear-gradient(135deg, #14B8A6 0%, #0f766e 100%) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* 3. Premium Cards */
+.card {
+    border: none !important;
+    border-radius: 1rem !important; /* 16px */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025) !important;
+    background: #ffffff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    font-weight: 600;
+    color: #0f766e; /* Teal-800 */
+    padding: 1.25rem 1.5rem !important;
+}
+
+/* 4. Inputs & Forms */
+.form-control, .form-select {
+    border-radius: 0.5rem !important; /* 8px */
+    border: 1px solid #e5e7eb;
+    padding: 0.6rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #14B8A6 !important;
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1) !important; /* Soft Teal Ring */
+}
+
+/* 5. Buttons */
+.btn {
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 1.25rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-teal {
+    background-color: #14B8A6 !important;
+    color: white !important;
+}
+
+.btn-teal:hover {
+    background-color: #0d9488 !important; /* Darker Teal */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(20, 184, 166, 0.25);
+}
+
+.btn-primary {
+    background-color: #14B8A6 !important; /* Override Bootstrap Primary to Teal */
+    border-color: #14B8A6 !important;
+}
+
+.btn-primary:hover {
+    background-color: #0d9488 !important;
+    border-color: #0d9488 !important;
+}
+
+/* 6. Page Specific Tweaks */
+
+/* Patient Search Table */
+.table-hover tbody tr:hover {
+    background-color: rgba(20, 184, 166, 0.05) !important;
+}
+
+/* Utilities */
+.text-teal {
+    color: #14B8A6 !important;
+}
+
+.bg-teal-light {
+    background-color: #ccfbf1 !important;
+    color: #0f766e !important;
+}

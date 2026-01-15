@@ -110,9 +110,13 @@
                     @foreach ($treatments as $index => $item)
                         <tr>
                             <td>{{ ($page - 1) * $perPage + $index + 1 }}</td>
-                            <td>{{ formatThaiDate($item->t_date) }}</td>
+                            <td
+                                title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
+                                {{ formatThaiDate($item->t_date) }}</td>
                             <td>{{ $item->hn }}</td>
-                            <td>{{ $item->patient_name }}</td>
+                            <td
+                                title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
+                                {{ $item->patient_name }}</td>
                             <td>{{ $item->age }}</td>
                             <td>{{ $item->agency_name }}</td>
                             <td>{{ $item->forward_name }}</td>
@@ -184,6 +188,13 @@
 
 
                                                 </form>
+
+                                                <div class="mt-4 pt-2 border-top text-muted small">
+                                                    <i class="fas fa-history me-1"></i>
+                                                    เพิ่มเมื่อ:
+                                                    {{ $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : '-' }}
+                                                    โดย: {{ $item->created_by ?? 'ระบบเดิม' }}
+                                                </div>
                                             </div>
 
                                             <!-- Modal Footer -->

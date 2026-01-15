@@ -19,7 +19,7 @@
     <div class="" id="main-content"></div>
 
     @push('script')
-    <script src="{{ asset('js/formManagement.js') }}"></script>
+        <script src="{{ asset('js/formManagement.js') }}"></script>
         <script>
             // เรียกฟังก์ชันทันทีตอนโหลดหน้า (สำหรับตั้งค่าครั้งแรก)  
             document.addEventListener("DOMContentLoaded", function() {
@@ -27,8 +27,9 @@
 
             });
 
-            // โหลดหน้าแรกเป็นตารางนัด
-            loadPage('appointments');
+            // โหลดหน้าตามค่าที่เก็บใน localStorage (ถ้ามี) หรือใช้ appointments เป็น default
+            const savedTab = localStorage.getItem('currentManagementTab') || 'appointments';
+            togglePage(savedTab);
 
             // Event Handlers
             if (typeof $ !== "undefined") {

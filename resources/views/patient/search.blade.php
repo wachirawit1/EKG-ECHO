@@ -22,7 +22,7 @@
     </div>
 @endsection
 
-@push('patinetScript')
+@push('patientScript')
     <script>
         $(document).ready(function() {
             let searchTimeout;
@@ -69,30 +69,31 @@
                                     `<div class="alert alert-warning text-center">ไม่พบผู้ป่วย</div>`
                                 );
                             } else {
-                                // กรองข้อมูลซ้ำ
-                                let uniquePatients = [];
-                                let seenHN = new Set();
-
-                                data.forEach(function(patient) {
-                                    if (!seenHN.has(patient.hn)) {
-                                        seenHN.add(patient.hn);
-                                        uniquePatients.push(patient);
-                                    }
-                                });
-
                                 let html = '';
-                                uniquePatients.forEach(function(p) {
+                                data.forEach(function(p) {
+                                    let fullName = (p.firstName || '') + ' ' + (
+                                        p.lastName || '');
+                                    let hn = p.hn || 'N/A';
+                                    let birthDay = p.birthDayFormatted || '-';
+                                    let sex = p.sex || '-';
+                                    let lastVisit = p.regNo || '-';
+                                    let cardId = p.CardID || '-';
+
                                     html += `
-                                <div class="card shadow-sm mb-3">
-                                    <div class="card-body">
-                                        <h6 class="text-primary">HN: ${p.hn || 'N/A'}</h6>
-                                        <h5 class="card-title">${(p.firstName || '') + ' ' + (p.lastName || '')}</h5>
-                                        <p class="card-text text-muted">
-                                            อายุ: ${p.birthDay || '-'} | ${p.sex || '-'} <br>
-                                            Visit ล่าสุด: ${p.last_visit || '-'}
-                                        </p>
-                                    </div>
-                                </div>`;
+                                        <div class="card shadow-sm mb-3">
+                                            <div class="card-body">
+                                                <h6 class="text-primary">HN: ${hn}</h6>
+                                                <h5 class="card-title">${fullName}</h5>
+                                                <p class="card-text text-muted">
+                                                    เลขบัตรประชาชน: ${cardId}
+                                                </p>
+                                                <p class="card-text text-muted">
+                                                    วันเกิด: ${birthDay} | เพศ: ${sex} <br>
+                                                    Visit ล่าสุด: ${lastVisit}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    `;
                                 });
                                 $results.html(html);
                             }

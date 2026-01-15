@@ -33,6 +33,7 @@ class PmController extends Controller
                 'u.birthday', // เปลี่ยนชื่อถ้าซ้ำ
 
             )
+            ->limit(50)
             ->get();
         return view('pm.pm', compact('allPm'));
     }

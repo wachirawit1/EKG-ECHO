@@ -868,16 +868,14 @@ document.getElementById("main-content").addEventListener(
 
             // ตรวจสอบว่าทั้งสองช่องมีข้อมูลและยาวพอ
             if (fname && lname && fname.length >= 2 && lname.length >= 2) {
-                // enableAppointmentFields(modal);
-
                 // เช็คว่าเป็นผู้ป่วยนอกหรือไม่ก่อนเช็คประวัติ
                 const resourceRadio = modal.querySelector(
                     'input[name="resource"]:checked'
                 );
-                // if (resourceRadio && resourceRadio.value === "out") {
-                //     // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
-                //     await checkAppointmentHistory("out", null, fname, lname);
-                // }
+                if (resourceRadio && resourceRadio.value === "out") {
+                    // เช็คประวัติการนัดสำหรับผู้ป่วยนอก
+                    await checkAppointmentHistory("out", null, fname, lname);
+                }
             } else {
                 // ถ้าข้อมูลไม่ครบหรือสั้นเกินไป ให้ล็อคช่อง
                 disableAppointmentFields(modal);

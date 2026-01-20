@@ -65,8 +65,8 @@ Route::middleware(['logged.in', 'check.session'])->group(function () {
 });
 
 // PM Search
-Route::get('/pm', [pmController::class, 'pm'])->name('pm.index');
-Route::get('/pm_search', [pmController::class, 'pm_search'])->name('pm_search');
+Route::get('/pm', [PmController::class, 'pm'])->name('pm.index');
+Route::get('/pm_search', [PmController::class, 'pm_search'])->name('pm_search');
 
 Route::middleware(['logged.in', 'check.session', 'is.admin'])->group(function () {
     Route::get('/admin', [AdminController::class, 'adminPage'])->name('admin');
@@ -80,6 +80,5 @@ Route::middleware(['logged.in', 'check.session', 'is.admin'])->group(function ()
 });
 
 Auth::routes();
-
 
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');

@@ -271,12 +271,16 @@
                 <div class="collapse navbar-collapse " id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link  {{ Route::currentRouteName() == 'index' || Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
+                            <a class="nav-link  {{ Route::currentRouteName() == 'index'  ? 'active' : '' }}"
                                 aria-current="page" href="{{ route('index') }}">หน้าแรก</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
                                 aria-current="page" href="{{ route('app.show') }}">การจัดการ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link  {{ Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
+                                aria-current="page" href="{{ route('report.show') }}">รายงาน</a>
                         </li>
 
 
@@ -425,7 +429,7 @@
         <div class="container">
             <small>
                 © {{ date('Y') }} EKG‑ECHO — เวอร์ชัน {{ env('APP_VERSION', '1.0.0') }}.
-                พัฒนาโดย <a href="http//:192.168.10.11:8080" target="_blank" class="text-decoration-none">นาย
+                พัฒนาโดย <a href="http://192.168.10.11:8080" target="_blank" class="text-decoration-none">นาย
                     วชิรวิทย์ กุลสุทธิชัย</a>
             </small>
         </div>

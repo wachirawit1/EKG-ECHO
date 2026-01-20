@@ -22,7 +22,9 @@ class AdminController extends Controller
             ->keyBy('username');
 
         $users = $users->map(function ($user) use ($account_roles) {
-            $role = $account_roles->get($user->username); //match username
+            $user->username = trim($user->username);
+            $user->userid = trim($user->userid);
+            $role = $account_roles->get($user->username);
 
             $user->role_id = $role->role_id ?? null;
             $user->role_name = $role->name ?? '';
@@ -31,7 +33,7 @@ class AdminController extends Controller
             return $user;
         });
 
-        $users = $users->filter(function($user){
+        $users = $users->filter(function ($user) {
             return $user->has_role === 1; // กรองเฉพาะผู้ใช้ที่มี role เท่านั้น
         });
 
@@ -73,7 +75,9 @@ class AdminController extends Controller
 
         // แมพ role ให้ users
         $users = $users->map(function ($user) use ($account_roles) {
-            $role = $account_roles->get($user->username); // match username
+            $user->username = trim($user->username);
+            $user->userid = trim($user->userid);
+            $role = $account_roles->get($user->username);
             $user->role_id = $role->role_id ?? null;
             $user->role_name = $role->name ?? '';
             return $user;
@@ -116,29 +120,29 @@ class AdminController extends Controller
 
         return response()->json(['success' => 'กำหนดสิทธิ์สำเร็จ']);
     }
-    // ลบผู้ใช้
+    // ลบสิทธิ์ผู้ใช้
     public function destroyUser($username)
     {
         try {
-            //ตรวจสอบว่าผู้ใช้มีบัญชีในตาราง account หรือไม่
-            $hasRole = DB::connection('mysql')
+            // ตรวจสอบว่าผู้ใช้มีบทบาทอยู่ในระบบหรือไม่
+            $exists = DB::connection('mysql')
                 ->table('account_role')
                 ->where('username', $username)
                 ->exists();
 
-            if (!$hasRole) {
-                return response()->json(['error' => 'ไม่พบผู้ใช้ในระบบ'], 404);
+            if (!$exists) {
+                return response()->json(['error' => 'ไม่พบข้อมูลสิทธิ์ของผู้ใช้นี้ในระบบ'], 404);
             }
 
-            // ลบจากตาราง account_role ก่อน
+            // ลบจากตาราง account_role
             DB::connection('mysql')
                 ->table('account_role')
                 ->where('username', $username)
                 ->delete();
 
-            return redirect()->route('admin')->with('success', 'ลบผู้ใช้สำเร็จ');
+            return response()->json(['success' => 'ลบสิทธิ์ผู้ใช้สำเร็จ']);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'เกิดข้อผิดพลาดในการลบผู้ใช้: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'เกิดข้อผิดพลาดในการลบสิทธิ์: ' . $e->getMessage()], 500);
         }
     }
 

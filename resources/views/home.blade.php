@@ -397,7 +397,8 @@
         <!-- Developer Credit Section -->
         <section class="developer-section">
             <div class="developer-avatar" style="overflow:hidden; padding:0;">
-                <img src="{{asset('assets/img/profile.jpg')}}" alt="" style="width:100px; height:100px; object-fit:cover; border-radius:50%; display:block;">
+                <img src="{{ asset('assets/img/profile.jpg') }}" alt=""
+                    style="width:100px; height:100px; object-fit:cover; border-radius:50%; display:block;">
             </div>
             <div class="developer-info">
                 <h2>พัฒนาโดย</h2>

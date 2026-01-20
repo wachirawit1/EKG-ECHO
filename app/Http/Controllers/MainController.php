@@ -465,7 +465,64 @@ class MainController extends Controller
             $startNum = ($page - 1) * $perPage + 1;
             $endNum = min($total, $page * $perPage);
 
-            return view('fragments.treatments', compact('treatments', 'totalPages', 'page', 'perPage', 'dept_list', 'ward_list', 'total', 'startNum', 'endNum'));
+            // ── ดึงนัดหมายวันนี้สำหรับ Quick Select (รวมทั้ง HIS และ MySQL) ──
+            $targetDoc = config('hms.target_doctors');
+            $todayThai = (\Carbon\Carbon::now()->year + 543) . \Carbon\Carbon::now()->format('md');
+            $todayYMD = \Carbon\Carbon::now()->format('Y-m-d');
+
+            // 1. จาก SQL Server (Appoint)
+            $hisAppointments = DB::connection('sqlsrv')
+                ->table('Appoint')
+                ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
+                ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+                ->leftJoin('DEPT', 'Appoint.appoint_dept', '=', 'DEPT.deptCode')
+                ->whereIn('doctor', $targetDoc)
+                ->where('appoint_date', $todayThai)
+                ->select(
+                    'Appoint.hn',
+                    DB::raw("RTRIM(PTITLE.titleName) + RTRIM(PATIENT.firstName) + ' ' + RTRIM(PATIENT.lastName) as fullname"),
+                    'DEPT.deptDesc as dept_name',
+                    'DEPT.deptCode as dept_code'
+                )
+                ->get();
+
+            // 2. จาก MySQL (appointment)
+            $localAppointments = DB::connection('mysql')
+                ->table('appointment')
+                ->leftJoin('patient', 'appointment.hn', '=', 'patient.hn')
+                ->where('appointment.a_date', $todayYMD)
+                ->select(
+                    'appointment.hn',
+                    DB::raw("CONCAT(patient.title_name, patient.fname, ' ', patient.lname) as fullname"),
+                    'appointment.ward as dept_raw' // ต้องแปลง ward/dept เป็นชื่อ
+                )
+                ->get()
+                ->map(function ($item) use ($depts, $wards) {
+                    // แปลง dept_raw เป็นชื่อที่อ่านออก
+                    $deptName = '-';
+                    $deptCode = null;
+                    if (str_starts_with($item->dept_raw ?? '', 'dept:')) {
+                        $code = substr($item->dept_raw, 5);
+                        $deptCode = trim($code);
+                        $deptName = isset($depts[$code]) ? $depts[$code]->deptDesc : $code;
+                    } elseif (str_starts_with($item->dept_raw ?? '', 'ward:')) {
+                        $code = substr($item->dept_raw, 5);
+                        $deptCode = trim($code);
+                        $deptName = isset($wards[$code]) ? $wards[$code]->ward_name : $code;
+                    }
+
+                    return (object)[
+                        'hn' => $item->hn,
+                        'fullname' => $item->fullname,
+                        'dept_name' => $deptName,
+                        'dept_code' => $deptCode
+                    ];
+                });
+
+            // รวมและเรียงตาม HN
+            $todayAppointments = $hisAppointments->merge($localAppointments)->sortBy('hn')->values();
+
+            return view('fragments.treatments', compact('treatments', 'totalPages', 'page', 'perPage', 'dept_list', 'ward_list', 'total', 'startNum', 'endNum', 'todayAppointments'));
         }
 
         return view("fragments.$page");
@@ -647,6 +704,14 @@ class MainController extends Controller
             ->where('appoint_dept', '=', '111')
             ->count();
 
+        // ── นับคนไข้ใหม่ (คนไข้ที่เพิ่มในระบบเองสำหรับวันนี้) ─────────────────
+        $newPatientsCount = DB::connection('mysql')
+            ->table('appointment')
+            ->join('patient', 'appointment.hn', '=', 'patient.hn')
+            ->where('appointment.a_date', '=', $selected->toDateString())
+            ->distinct('appointment.hn')
+            ->count();
+
         // ── ข้อมูลการนัด (MySQL) ของ "วันที่เลือก" ─────────────────────────────
         $mysql_appointment = DB::connection('mysql')
             ->table('appointment')
@@ -750,7 +815,7 @@ class MainController extends Controller
             ->leftJoin('DEPT', 'Appoint.pre_dept_code', '=', 'DEPT.deptCode')
             ->whereIn('doctor', $targetDoc)
             ->where('appoint_date', '=', $selectedThai)
-            ->where('appoint_dept', '111')
+            ->where('appoint_dept', ['111', '1110']) //dept
             ->orderBy('appoint_time_from', 'ASC')
             ->get()
             ->map(function ($item) {
@@ -786,11 +851,12 @@ class MainController extends Controller
             ->table('Appoint')
             ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
             ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
+            ->whereIn('appoint_dept', ['111', '1110'])
             ->whereIn('doctor', $targetDoc)
             ->whereBetween('appoint_date', [$startThai, $endThai])
             ->orderBy('appoint_date')
             ->orderBy('appoint_time_from')
-            ->limit(5)
+            // ->limit(5)
             ->get();
 
         foreach ($upcoming as $u) {
@@ -820,7 +886,7 @@ class MainController extends Controller
             'todayCount',
             'doneCount',
             'waitingCount',
-
+            'newPatientsCount'
         ));
     }
 
@@ -890,6 +956,7 @@ class MainController extends Controller
             ->leftJoin('PATIENT', 'Appoint.hn', '=', 'PATIENT.hn')
             ->leftJoin('PTITLE', 'PATIENT.titleCode', '=', 'PTITLE.titleCode')
             ->leftJoin('DOCC', 'Appoint.doctor', '=', 'DOCC.docCode') // ถ้าต้องการ doctor name
+            ->leftJoin('DEPT', 'Appoint.appoint_dept', '=', 'DEPT.deptCode')
             ->whereIn('doctor', $targetDoc)
             ->where('appoint_date', '=', $todayThai)
             ->orderBy('appoint_time_from', 'ASC')
@@ -902,6 +969,7 @@ class MainController extends Controller
                 return (object)[
                     'hn' => $item->hn,
                     'patient_name' => trim($item->titleName) . ' ' . trim($item->firstName) . ' ' . trim($item->lastName),
+                    'appoint_dept' => $item->deptDesc,
                     'date' => \Carbon\Carbon::createFromFormat('Ymd', $dateEn)
                         ->locale('th')
                         ->translatedFormat('j F Y'),
@@ -912,7 +980,17 @@ class MainController extends Controller
             });
         $allAppointments = $combinedAppointments->merge($sql_appointment)
             ->sortBy('time');
+
+        // คำนวณสถิติสำหรับ Dashboard
+        $stats = [
+            'total' => $allAppointments->count(),
+            'manual' => $combinedAppointments->count(),
+            'his' => $sql_appointment->count(),
+            'by_doctor' => $allAppointments->groupBy('doctor')->map->count(),
+            'by_source' => $allAppointments->groupBy('source')->map->count(),
+        ];
+
         $appointmentsByDoctor = $allAppointments->groupBy('doctor');
-        return view('report', compact('appointmentsByDoctor', 'allAppointments'));
+        return view('report', compact('appointmentsByDoctor', 'allAppointments', 'stats'));
     }
 }

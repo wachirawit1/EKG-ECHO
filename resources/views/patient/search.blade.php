@@ -71,26 +71,47 @@
                             } else {
                                 let html = '';
                                 data.forEach(function(p) {
+                                    let hn = p.hn || 'N/A';
                                     let fullName = (p.firstName || '') + ' ' + (
                                         p.lastName || '');
-                                    let hn = p.hn || 'N/A';
                                     let birthDay = p.birthDayFormatted || '-';
                                     let sex = p.sex || '-';
                                     let lastVisit = p.regNo || '-';
                                     let cardId = p.CardID || '-';
+                                    let tel = p.tel || 'ไม่ระบุ';
+                                    let sourceColor = p.source === 'HIS' ?
+                                        'primary' : 'success';
+                                    let hospital = p.hospital_name || 'ไม่ระบุ';
 
                                     html += `
-                                        <div class="card shadow-sm mb-3">
+                                        <div class="card shadow-sm mb-3 border-start border-4 border-${sourceColor}">
                                             <div class="card-body">
-                                                <h6 class="text-primary">HN: ${hn}</h6>
-                                                <h5 class="card-title">${fullName}</h5>
-                                                <p class="card-text text-muted">
-                                                    เลขบัตรประชาชน: ${cardId}
-                                                </p>
-                                                <p class="card-text text-muted">
-                                                    วันเกิด: ${birthDay} | เพศ: ${sex} <br>
-                                                    Visit ล่าสุด: ${lastVisit}
-                                                </p>
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <span class="badge bg-${sourceColor} mb-2">${hospital}</span>
+                                                        <h6 class="text-secondary mb-1">HN: ${hn}</h6>
+                                                        <h4 class="card-title fw-bold text-dark mb-1">${fullName}</h4>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <a href="tel:${tel}" class="btn btn-sm btn-outline-primary rounded-pill">
+                                                            <i class="fas fa-phone-alt me-1"></i> ${tel}
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                <div class="row g-2 mt-2 pt-2 border-top">
+                                                    <div class="col-6 col-md-4">
+                                                        <small class="text-muted d-block">เลขบัตรประชาชน</small>
+                                                        <span class="small fw-bold">${cardId}</span>
+                                                    </div>
+                                                    <div class="col-6 col-md-4">
+                                                        <small class="text-muted d-block">วันเกิด / เพศ</small>
+                                                        <span class="small fw-bold">${birthDay} (${sex})</span>
+                                                    </div>
+                                                    <div class="col-12 col-md-4">
+                                                        <small class="text-muted d-block">Visit ล่าสุด</small>
+                                                        <span class="small fw-bold text-info">${lastVisit}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     `;

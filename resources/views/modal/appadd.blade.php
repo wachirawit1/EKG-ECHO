@@ -18,12 +18,12 @@
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="resource" id="in_patient"
                                 value="in" onchange="togglePatientFields()" checked>
-                            <label class="form-check-label" for="in_patient">ในรพ.</label>
+                            <label class="form-check-label" for="in_patient">รพศ.</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="resource" id="out_patient"
                                 value="out" onchange="togglePatientFields()">
-                            <label class="form-check-label" for="out_patient">นอกรพ.</label>
+                            <label class="form-check-label" for="out_patient">รพช.</label>
                         </div>
                     </div>
 
@@ -145,14 +145,14 @@
                         <!-- ตัวเลือก 2 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time2"
-                                value="11:00-11:30" disabled />
+                                value="10:30-11:30" disabled />
                             <label class="form-check-label" for="time2">10:30 - 11:30</label>
                         </div>
 
                         <!-- ตัวเลือก 3 -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="radio" name="appointment_time" id="time3"
-                                value="14:00-14:30" disabled />
+                                value="15:00-16:00" disabled />
                             <label class="form-check-label" for="time2">15:00 - 16:00</label>
                         </div>
 

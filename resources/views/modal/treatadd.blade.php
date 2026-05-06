@@ -15,12 +15,12 @@
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="resource" id="in_patient"
                                 value="in" checked>
-                            <label class="form-check-label" for="in_patient">ในรพ.</label>
+                            <label class="form-check-label" for="in_patient">รพศ.</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" name="resource" id="out_patient"
                                 value="out">
-                            <label class="form-check-label" for="out_patient">นอกรพ.</label>
+                            <label class="form-check-label" for="out_patient">รพช.</label>
                         </div>
                     </div>
                     {{-- in --}}

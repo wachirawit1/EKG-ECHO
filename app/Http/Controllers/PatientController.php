@@ -22,6 +22,8 @@ class PatientController extends Controller
             ], 400);
         }
 
+        $queryPadded = str_pad($query, 7, ' ', STR_PAD_LEFT);
+
         // 1. ค้นหาจากฐานข้อมูลหลักโรงพยาบาล (SQL Server)
         $hisPatients = DB::connection('sqlsrv')
             ->table('PATIENT as p')
@@ -31,8 +33,9 @@ class PatientController extends Controller
             })
             ->leftJoin('PatSS as s', 'p.hn', '=', 's.hn')
             ->leftJoin('PTITLE as t', 'p.titleCode', '=', 't.titleCode')
-            ->where(function ($q) use ($query) {
+            ->where(function ($q) use ($query, $queryPadded) {
                 $q->where('p.hn', 'LIKE', "%{$query}%")
+                    ->orWhere('p.hn', 'LIKE', "%{$queryPadded}%")
                     ->orWhere(DB::raw("p.firstName + ' ' + p.lastName"), 'LIKE', "%{$query}%");
             })
             ->select(
@@ -42,6 +45,7 @@ class PatientController extends Controller
                 'p.lastName as lastName',
                 'p.birthDay',
                 'p.sex',
+                'p.phone as tel',
                 'o.regNo',
                 's.CardID'
             )
@@ -50,6 +54,7 @@ class PatientController extends Controller
             ->map(function ($item) {
                 $item->source = 'HIS';
                 $item->hospital_name = 'โรงพยาบาลหลัก';
+                $item->tel = trim($item->tel ?? 'ไม่พบข้อมูลเบอร์โทร');
                 $item->birthDayFormatted = \App\Helpers\DateHelper::formatThaiDate($item->birthDay);
                 return $item;
             });
@@ -70,6 +75,7 @@ class PatientController extends Controller
                     'birthDay' => null,
                     'birthDayFormatted' => 'คนไข้ภายนอก/รพช.',
                     'sex' => null,
+                    'tel' => $item->tel ?? 'ไม่ระบุ',
                     'regNo' => null,
                     'CardID' => null,
                     'source' => 'LOCAL',

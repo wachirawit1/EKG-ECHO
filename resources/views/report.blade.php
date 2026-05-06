@@ -13,27 +13,41 @@
         </nav>
 
         {{-- Page Header --}}
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
             <div>
                 <h2 class="fw-bold text-dark mb-1">
                     <i class="fas fa-chart-pie me-2 text-primary"></i>Executive Dashboard
                 </h2>
                 <p class="text-muted mb-0">สรุปข้อมูลการนัดหมายและภาระงานประจำวันที่
-                    {{ \App\Helpers\DateHelper::formatThaiDate(now()) }}</p>
+                    @php
+                        $selectedThai = $selectedDate->year + 543 . $selectedDate->format('md');
+                    @endphp
+                    <span
+                        class="text-primary fw-bold">{{ \App\Helpers\DateHelper::formatThaiDate($selectedThai, 'full') }}</span>
+                </p>
             </div>
-            <div class="btn-group">
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
-                    <i class="fas fa-print me-1"></i> พิมพ์รายงาน
-                </button>
-                <button type="button" class="btn btn-primary btn-sm" onclick="location.reload()">
-                    <i class="fas fa-sync-alt me-1"></i> รีเฟรชข้อมูล
-                </button>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="input-group input-group-sm rounded-pill border overflow-hidden shadow-sm" style="width: 220px;">
+                    <span class="input-group-text bg-white border-0"><i class="fas fa-calendar-alt text-primary"></i></span>
+                    <input type="text" class="form-control border-0 bg-white" id="reportDate"
+                        placeholder="เลือกวันที่..." readonly>
+                </div>
+
+                <div class="btn-group shadow-sm">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                        <i class="fas fa-print me-1"></i> พิมพ์รายงาน
+                    </button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-1"></i> รีเฟรชข้อมูล
+                    </button>
+                </div>
             </div>
         </div>
 
         {{-- Summary Cards --}}
         <div class="row g-3 mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card border-0 shadow-sm bg-primary text-white h-100">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center">
@@ -45,31 +59,40 @@
                                 <i class="fas fa-users fa-2x"></i>
                             </div>
                         </div>
-                        <div class="mt-3 small opacity-75">
-                            <i class="fas fa-info-circle me-1"></i> รวมจากระบบ HOMC และสมุดบันทึก
-                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card border-0 shadow-sm bg-success text-white h-100">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-uppercase mb-2 opacity-75 small fw-bold">ดึงข้อมูลจาก HIS</h6>
-                                <h2 class="mb-0 fw-bold">{{ $stats['his'] }}</h2>
+                                <h6 class="text-uppercase mb-2 opacity-75 small fw-bold">มาตามนัด (Normal)</h6>
+                                <h2 class="mb-0 fw-bold">{{ $stats['came'] }}</h2>
                             </div>
                             <div class="icon-square bg-white bg-opacity-25 rounded-circle p-3">
-                                <i class="fas fa-database fa-2x"></i>
+                                <i class="fas fa-check-double fa-2x"></i>
                             </div>
-                        </div>
-                        <div class="mt-3 small opacity-75">
-                            <i class="fas fa-check-circle me-1"></i> ข้อมูลที่บันทึกผ่านระบบ HOMC
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm text-white h-100" style="background-color: #6f42c1;">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-uppercase mb-2 opacity-75 small fw-bold">ไม่มา/เกินนัด (Overdue)</h6>
+                                <h2 class="mb-0 fw-bold">{{ $stats['missed'] }}</h2>
+                            </div>
+                            <div class="icon-square bg-white bg-opacity-25 rounded-circle p-3">
+                                <i class="fas fa-user-times fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="card border-0 shadow-sm bg-info text-white h-100">
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center">
@@ -80,9 +103,6 @@
                             <div class="icon-square bg-white bg-opacity-25 rounded-circle p-3">
                                 <i class="fas fa-keyboard fa-2x"></i>
                             </div>
-                        </div>
-                        <div class="mt-3 small opacity-75">
-                            <i class="fas fa-user-edit me-1"></i> ข้อมูลที่เจ้าหน้าที่คีย์เพิ่มเอง
                         </div>
                     </div>
                 </div>
@@ -149,6 +169,7 @@
                                                     <th>HN</th>
                                                     <th>ชื่อ-นามสกุล</th>
                                                     <th>แผนก/วอร์ด</th>
+                                                    <th class="text-center">สถานะ</th>
                                                     <th class="text-center">แหล่งข้อมูล</th>
                                                 </tr>
                                             </thead>
@@ -159,7 +180,16 @@
                                                         <td><code class="text-primary fw-bold">{{ $app->hn }}</code>
                                                         </td>
                                                         <td class="fw-bold">{{ $app->patient_name }}</td>
-                                                        <td><span class="small text-muted">{{ $app->appoint_dept ?? '-' }}</span>
+                                                        <td><span
+                                                                class="small text-muted">{{ $app->appoint_dept ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @if (!empty($app->reg_no))
+                                                                <span
+                                                                    class="badge bg-success-soft text-success rounded-pill px-3">มาแล้ว</span>
+                                                            @else
+                                                                <span class="text-muted small">-</span>
+                                                            @endif
                                                         </td>
                                                         <td class="text-center">
                                                             @if ($app->source == 'homc')
@@ -235,6 +265,8 @@
     </style>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Data from PHP
@@ -307,6 +339,28 @@
                         }
                     },
                     cutout: '70%'
+                }
+            });
+
+            // Initialize Flatpickr for Date Filter
+            flatpickr("#reportDate", {
+                locale: "th",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j F Y",
+                defaultDate: "{{ request('dateFilter', $selectedDate->toDateString()) }}",
+                onChange: function(selectedDates, dateStr, instance) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('dateFilter', dateStr);
+                    window.location.href = url.toString();
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    const altInput = instance.altInput;
+                    if (altInput && dateStr) {
+                        const date = new Date(dateStr);
+                        const yearBE = date.getFullYear() + 543;
+                        altInput.value = altInput.value.replace(date.getFullYear(), yearBE);
+                    }
                 }
             });
         });

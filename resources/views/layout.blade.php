@@ -271,12 +271,12 @@
                 <div class="collapse navbar-collapse " id="navbarSupportedContent">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link  {{ Route::currentRouteName() == 'index'  ? 'active' : '' }}"
+                            <a class="nav-link  {{ Route::currentRouteName() == 'index' ? 'active' : '' }}"
                                 aria-current="page" href="{{ route('index') }}">หน้าแรก</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link  {{ Route::currentRouteName() == 'app.show' ? 'active' : '' }}"
-                                aria-current="page" href="{{ route('app.show') }}">การจัดการ</a>
+                                aria-current="page" href="{{ route('app.show') }}">สมุดบันทึก</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link  {{ Route::currentRouteName() == 'report.show' ? 'active' : '' }}"
@@ -410,6 +410,14 @@
                 toast.show(); // แสดง toast
                 return toast;
             });
+
+            // --- Keep Session Alive ---
+            // ส่ง request ไปที่ server ทุก 10 นาที เพื่อไม่ให้ Session/CSRF หมดอายุ
+            setInterval(function() {
+                fetch('/up').then(response => {
+                    console.log('Session keep-alive ping');
+                }).catch(err => console.error('Keep-alive failed:', err));
+            }, 600000); // 600,000 ms = 10 minutes
         });
     </script>
     @stack('script')

@@ -35,6 +35,23 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
+        Schema::create('account_role', function (Blueprint $table) {
+                $table->increments('account_id');
+                $table->string('username',50);
+                $table->string('role_id',11);
+        });
+
+        Schema::create('role', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name',50);
+        });
+
+        Schema::create('online_users', function (Blueprint $table) {
+            $table->string('user_id',50);
+            $table->string('fullname',50);
+            $table->dateTime('last_activity');
+        });
     }
 
     /**
@@ -45,5 +62,8 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('account_role');
+        Schema::dropIfExists('role');
+        Schema::dropIfExists('online_users');
     }
 };

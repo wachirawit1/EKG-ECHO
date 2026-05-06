@@ -4,64 +4,78 @@
 @section('dashboardContent')
     <div class="container-fluid py-4 px-4">
         {{-- Stats Overview --}}
-        <div class="row g-3 mb-4">
-            <div class="col-xl-3 col-md-6">
+        <div class="row g-3 mb-4 row-cols-2 row-cols-md-3 row-cols-lg-5">
+            <div class="col">
                 <div class="card border-0 shadow-sm h-100 stat-card border-start border-4 border-primary">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-2">
-                                <i class="fas fa-calendar-alt text-primary fa-lg"></i>
+                    <div class="card-body p-3 text-center">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <div class="stat-icon bg-primary bg-opacity-10 rounded-3 p-2" style="width: 35px; height: 35px;">
+                                <i class="fas fa-calendar-alt text-primary"></i>
                             </div>
-                            <span class="text-muted small fw-bold">นัดทั้งหมด</span>
                         </div>
-                        <h2 class="fw-bold mb-1 text-dark">{{ $todayCount }}</h2>
-                        <p class="text-muted small mb-0">ประจำวันที่
-                            {{ request('dateFilter', now()->format('d/m/Y')) }}</p>
+                        <span class="text-muted smaller fw-bold d-block mb-1">นัดทั้งหมด</span>
+                        <h3 class="fw-bold mb-0 text-dark" id="stat-total">{{ $todayCount }}</h3>
+                        <p class="text-muted" style="font-size: 10px; margin-top: 4px;">
+                            <i class="fas fa-calendar-day me-1"></i>
+                            {{ \Carbon\Carbon::parse(request('dateFilter', now()->toDateString()))->locale('th')->translatedFormat('j F') }}
+                            {{ \Carbon\Carbon::parse(request('dateFilter', now()->toDateString()))->year + 543 }}
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
+            <div class="col">
                 <div class="card border-0 shadow-sm h-100 stat-card border-start border-4 border-success">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-2">
-                                <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <div class="card-body p-3 text-center">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <div class="stat-icon bg-success bg-opacity-10 rounded-3 p-2"
+                                style="width: 35px; height: 35px;">
+                                <i class="fas fa-check-circle text-success"></i>
                             </div>
-                            <span class="text-muted small fw-bold">เสร็จสิ้นแล้ว</span>
                         </div>
-                        <h2 class="fw-bold mb-1 text-dark">{{ $doneCount }}</h2>
-                        <div class="progress mt-2" style="height: 6px; border-radius: 3px;">
-                            <div class="progress-bar bg-success" role="progressbar"
-                                style="width: {{ $todayCount > 0 ? ($doneCount / $todayCount) * 100 : 0 }}%"></div>
-                        </div>
+                        <span class="text-muted smaller fw-bold d-block mb-1">ตรวจเสร็จแล้ว</span>
+                        <h3 class="fw-bold mb-0 text-dark" id="stat-done">{{ $doneCount }}</h3>
                     </div>
                 </div>
             </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card border-0 shadow-sm h-100 stat-card border-start border-4 border-warning">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-2">
-                                <i class="fas fa-clock text-warning fa-lg"></i>
-                            </div>
-                            <span class="text-muted small fw-bold">กำลังรอ</span>
-                        </div>
-                        <h2 class="fw-bold mb-1 text-dark">{{ $waitingCount }}</h2>
-                        <p class="text-muted small mb-0"><i class="fas fa-sync-alt me-1"></i>อัปเดตแบบ Realtime</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
+            <div class="col">
                 <div class="card border-0 shadow-sm h-100 stat-card border-start border-4 border-info">
-                    <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-2">
-                                <i class="fas fa-user-plus text-info fa-lg"></i>
+                    <div class="card-body p-3 text-center">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <div class="stat-icon bg-info bg-opacity-10 rounded-3 p-2" style="width: 35px; height: 35px;">
+                                <i class="fas fa-user-check text-info"></i>
                             </div>
-                            <span class="text-muted small fw-bold">คนไข้ใหม่วันนี้</span>
                         </div>
-                        <h2 class="fw-bold mb-1 text-dark">{{ $newPatientsCount }}</h2>
-                        <p class="text-muted small mb-0">ข้อมูลคำนวณจากระบบ</p>
+                        <span class="text-muted smaller fw-bold d-block mb-1">มาแล้ว/รอตรวจ</span>
+                        <h3 class="fw-bold mb-0 text-dark" id="stat-came">{{ $cameCount }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border-0 shadow-sm h-100 stat-card border-start border-4"
+                    style="border-color: #6f42c1 !important;">
+                    <div class="card-body p-3 text-center">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <div class="stat-icon bg-purple bg-opacity-10 rounded-3 p-2"
+                                style="width: 35px; height: 35px; background-color: rgba(111, 66, 193, 0.1);">
+                                <i class="fas fa-user-times" style="color: #6f42c1;"></i>
+                            </div>
+                        </div>
+                        <span class="text-muted smaller fw-bold d-block mb-1">ไม่มาตามนัด</span>
+                        <h3 class="fw-bold mb-0 text-dark" style="color: #6f42c1;" id="stat-missed">{{ $missedCount }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card border-0 shadow-sm h-100 stat-card border-start border-4 border-warning">
+                    <div class="card-body p-3 text-center">
+                        <div class="d-flex justify-content-center align-items-center mb-2">
+                            <div class="stat-icon bg-warning bg-opacity-10 rounded-3 p-2"
+                                style="width: 35px; height: 35px;">
+                                <i class="fas fa-clock text-warning"></i>
+                            </div>
+                        </div>
+                        <span class="text-muted smaller fw-bold d-block mb-1">รอรับบริการ</span>
+                        <h3 class="fw-bold mb-0 text-dark" id="stat-waiting">{{ $waitingCount }}</h3>
                     </div>
                 </div>
             </div>
@@ -100,12 +114,12 @@
                     <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold mb-0">รายการนัดคัดแยกตามกลุ่มภาระงาน</h5>
                         <div class="d-flex align-items-center">
-                            <div class="input-group input-group-sm rounded-pill border overflow-hidden">
+                            <div class="input-group input-group-sm rounded-pill border overflow-hidden shadow-sm"
+                                style="width: 180px;">
                                 <span class="input-group-text bg-white border-0"><i
-                                        class="fas fa-calendar text-primary"></i></span>
-                                <input type="date" class="form-control border-0" id="appointmentDate"
-                                    value="{{ request('dateFilter', now()->toDateString()) }}"
-                                    onchange="filterAppointments()">
+                                        class="fas fa-calendar-alt text-primary"></i></span>
+                                <input type="text" class="form-control border-0 bg-white" id="appointmentDate"
+                                    placeholder="เลือกวันที่..." readonly>
                             </div>
                         </div>
                     </div>
@@ -122,46 +136,8 @@
                                         <th class="text-center">สถานะ</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    @php $counter = 1; @endphp
-                                    @foreach ($appointmentsByDoctor as $doctor => $appointments)
-                                        <tr class="bg-gray-100">
-                                            <td colspan="6"
-                                                class="ps-4 py-2 border-bottom fw-bold text-primary small bg-light bg-opacity-50">
-                                                <i class="fas fa-user-md me-2"></i>{{ $doctor }}
-                                                <span
-                                                    class="badge bg-primary bg-opacity-10 text-primary ms-2">{{ $appointments->count() }}
-                                                    เคส</span>
-                                            </td>
-                                        </tr>
-                                        @foreach ($appointments as $item)
-                                            <tr>
-                                                <td class="ps-4 text-muted small text-center">{{ $counter++ }}</td>
-                                                <td><span
-                                                        class="badge bg-secondary bg-opacity-10 text-secondary fw-bold">{{ trim($item->hn) }}</span>
-                                                </td>
-                                                <td class="fw-bold">{{ $item->patient_name }}</td>
-                                                <td class="text-primary fw-bold">{{ $item->time }}</td>
-                                                <td><span class="small text-muted">{{ $item->ward ?? '-' }}</span></td>
-                                                <td class="text-center">
-                                                    @if (str_contains($item->note ?? '', 'เสร็จ') || $item->source == 'homc')
-                                                        <span class="status-dot status-done"></span>
-                                                    @else
-                                                        <span class="status-dot status-waiting"></span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endforeach
-                                    @if ($appointmentsByDoctor->isEmpty())
-                                        <tr>
-                                            <td colspan="6" class="text-center py-5">
-                                                <img src="https://img.icons8.com/clouds/100/000000/todo-list.png"
-                                                    class="mb-3">
-                                                <p class="text-muted">ไม่พบนัดหมายในวันที่เลือก</p>
-                                            </td>
-                                        </tr>
-                                    @endif
+                                <tbody id="dashboard-table-body">
+                                    @include('fragments.dashboard_table')
                                 </tbody>
                             </table>
                         </div>
@@ -191,7 +167,11 @@
                                             </div>
                                         </div>
                                         <div class="flex-grow-1">
-                                            <h6 class="mb-0 fw-bold small">{{ $item->fullname }}</h6>
+                                            <div class="d-flex align-items-center">
+                                                <h6 class="mb-0 fw-bold small">{{ $item->fullname }}</h6>
+                                                <span class="ms-2 badge bg-light text-muted fw-normal"
+                                                    style="font-size: 9px;">HN: {{ $item->hn }}</span>
+                                            </div>
                                             <span class="x-small text-muted">{{ $item->time }} |
                                                 {{ $item->service_name }}</span>
                                         </div>
@@ -202,6 +182,40 @@
                                 </div>
                             @empty
                                 <div class="text-center py-4 opacity-50 small">ไม่มีนัดหมายใหม่</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Online Users Section --}}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold mb-0">ออนไลน์อยู่ในขณะนี้</h6>
+                        <span
+                            class="badge bg-success bg-opacity-10 text-success rounded-pill">{{ count($onlineUsers) }}</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush scroll-section"
+                            style="max-height: 200px; overflow-y: auto;">
+                            @forelse ($onlineUsers as $user)
+                                <div class="list-group-item border-0 px-4 py-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-primary bg-opacity-10 text-primary me-3 small fw-bold d-flex align-items-center justify-content-center"
+                                            style="width: 32px; height: 32px; border-radius: 50%;">
+                                            {{ mb_substr($user->fullname, 0, 1) }}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="small fw-bold">{{ $user->fullname }}</div>
+                                            <div class="x-small text-muted">
+                                                <i class="fas fa-circle text-success x-small me-1"
+                                                    style="font-size: 6px;"></i>
+                                                {{ \Carbon\Carbon::parse($user->last_activity)->diffForHumans() }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-4 opacity-50 small">ไม่มีผู้ใช้งานออนไลน์</div>
                             @endforelse
                         </div>
                     </div>
@@ -357,17 +371,68 @@
                     month: 'long',
                     day: 'numeric'
                 };
-                document.getElementById('current-time').textContent = now.toLocaleString('th-TH', options);
+                const clockEl = document.getElementById('current-time');
+                if (clockEl) clockEl.textContent = now.toLocaleString('th-TH', options);
             }
             setInterval(updateClock, 1000);
             updateClock();
+
+            // Initialize Flatpickr
+            flatpickr("#appointmentDate", {
+                locale: "th",
+                dateFormat: "Y-m-d",
+                altInput: true,
+                altFormat: "j F Y",
+                defaultDate: "{{ request('dateFilter', now()->toDateString()) }}",
+                onChange: function(selectedDates, dateStr, instance) {
+                    filterAppointments(dateStr);
+                },
+                onReady: function(selectedDates, dateStr, instance) {
+                    // ปรับปีใน alt input ให้เป็น พ.ศ. (Optional - flatpickr default as AD)
+                    const altInput = instance.altInput;
+                    if (altInput && dateStr) {
+                        const date = new Date(dateStr);
+                        const yearBE = date.getFullYear() + 543;
+                        altInput.value = altInput.value.replace(date.getFullYear(), yearBE);
+                    }
+                }
+            });
         });
 
-        function filterAppointments() {
-            const date = document.getElementById('appointmentDate').value;
+        function filterAppointments(date) {
             const url = new URL(window.location.href);
             url.searchParams.set('dateFilter', date);
             window.location.href = url.toString();
         }
+
+        // Auto Update Dashboard (AJAX Polling) every 60 seconds
+        setInterval(function() {
+            const dateFilter = "{{ request('dateFilter', now()->toDateString()) }}";
+            // Check if there's any active modal (prevent updating while user is interacting)
+            if ($('.modal.show').length > 0) return;
+
+            $.ajax({
+                url: "{{ route('index') }}",
+                type: 'GET',
+                data: {
+                    dateFilter: dateFilter
+                },
+                success: function(response) {
+                    if (response) {
+                        $('#stat-total').text(response.todayCount);
+                        $('#stat-done').text(response.doneCount);
+                        $('#stat-came').text(response.cameCount);
+                        $('#stat-missed').text(response.missedCount);
+                        $('#stat-waiting').text(response.waitingCount);
+
+                        // Update table body
+                        $('#dashboard-table-body').html(response.table_html);
+                    }
+                },
+                error: function(err) {
+                    console.log("Failed to auto-update dashboard.");
+                }
+            });
+        }, 300000);
     </script>
 @endsection

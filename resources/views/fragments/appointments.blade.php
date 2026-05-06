@@ -116,208 +116,203 @@
     </div>
 @endif
 
-<table class="table table-hover table-striped border ">
-    <div class="table-responsive">
+<div class="table-responsive shadow-sm rounded border bg-white my-3 ">
 
-        {{-- Section: Table --}}
-        @if ($appointments->count() === 0)
-            <div class="alert alert-warning text-center mt-3">ไม่พบข้อมูลการนัดวันนี้</div>
-        @else
-            <table class="table table-hover table-bordered align-middle">
-                <thead class="table-light">
+    {{-- Section: Table --}}
+    @if ($appointments->count() === 0)
+        <div class="alert alert-warning text-center mt-3">ไม่พบข้อมูลการนัดวันนี้</div>
+    @else
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>วันที่นัด</th>
+                    <th>HN</th>
+                    <th>ชื่อ-นามสกุล</th>
+                    <th>วอร์ด</th>
+                    <th>แพทย์</th>
+                    <th>หมายเหตุ</th>
+                    <th colspan="2" class="text-center">การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($data as $index => $item)
                     <tr>
-                        <th>#</th>
-                        <th>วันที่นัด</th>
-                        <th>HN</th>
-                        <th>ชื่อ-นามสกุล</th>
-                        <th>วอร์ด</th>
-                        <th>แพทย์</th>
-                        <th>หมายเหตุ</th>
-                        <th colspan="2" class="text-center">การจัดการ</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($data as $index => $item)
-                        <tr>
-                            <td>{{ ($page - 1) * $perPage + $index + 1 }}</td>
-                            <td
-                                title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
-                                {{ formatThaiDate($item->a_date) }}</td>
-                            <td>{{ $item->hn }}</td>
-                            <td
-                                title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
-                                {{ $item->patient_name ?? '-' }}</td>
-                            <td>{{ $item->dept_name }}</td>
-                            <td>{{ $item->doctor_name }}</td>
-                            <td>{{ $item->note ?? '-' }}</td>
-                            <td class="text-center">
-                                <!-- MOdal button !-->
-                                <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
-                                    data-bs-target="#patientInfo{{ $item->a_id }}">ดู</button>
+                        <td>{{ ($page - 1) * $perPage + $index + 1 }}</td>
+                        <td
+                            title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
+                            {{ formatThaiDate($item->a_date) }}</td>
+                        <td>{{ $item->hn }}</td>
+                        <td
+                            title="เพิ่มเมื่อ: {{ $item->created_at ?? '-' }} โดย: {{ $item->created_by ?? 'ระบบเดิม' }}">
+                            {{ $item->patient_name ?? '-' }}</td>
+                        <td>{{ $item->dept_name }}</td>
+                        <td>{{ $item->doctor_name }}</td>
+                        <td>{{ $item->note ?? '-' }}</td>
+                        <td class="text-center">
+                            <!-- MOdal button !-->
+                            <button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
+                                data-bs-target="#patientInfo{{ $item->a_id }}">ดู</button>
 
 
-                                <!-- Modal info -->
-                                <div class="modal fade text-start" id="patientInfo{{ $item->a_id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <!-- Modal Header -->
-                                            <div class="modal-header">
-                                                <h5 class="modal-title fw-bold"
-                                                    id="patientInfoLabel{{ $item->a_id }}">
-                                                    ข้อมูลผู้ป่วย
-                                                </h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="ปิด"></button>
-                                            </div>
+                            <!-- Modal info -->
+                            <div class="modal fade text-start" id="patientInfo{{ $item->a_id }}" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <!-- Modal Header -->
+                                        <div class="modal-header">
+                                            <h5 class="modal-title fw-bold" id="patientInfoLabel{{ $item->a_id }}">
+                                                ข้อมูลผู้ป่วย
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="ปิด"></button>
+                                        </div>
 
-                                            <!-- Modal Body -->
-                                            <div class="modal-body">
-                                                <div class="d-flex justify-content-end align-items-center gap-2 my-2">
-                                                    <button type="button" class="btn btn-info print-btn"
-                                                        data-id="{{ $item->a_id }}">
-                                                        <i class="fas fa-print me-1"></i>พิมพ์ PDF
-                                                    </button>
-                                                    <button type="button" class="btn btn-warning edit-btn"
-                                                        data-id="{{ $item->a_id }}">
-                                                        <i class="fas fa-edit me-1"></i>แก้ไข
-                                                    </button>
-                                                </div>
-
-                                                <!-- Patient Info Form -->
-                                                <form id="patientInfoForm{{ $item->a_id }}">
-                                                    <div class="row">
-                                                        <div class="col-8 mb-3">
-                                                            <label for="hn{{ $item->a_id }}"
-                                                                class="form-label fw-bold">HN</label>
-                                                            <input type="text" class="form-control"
-                                                                id="hn{{ $item->a_id }}" name="hn"
-                                                                value="{{ trim($item->hn) . ' - ' . $item->patient_name . ($item->hospital_name ?? '') }}"
-                                                                readonly>
-                                                        </div>
-
-                                                        <div class="col mb-3">
-                                                            <label for="age{{ $item->a_id }}"
-                                                                class="form-label fw-bold">อายุ</label>
-                                                            <input class="form-control" id="age{{ $item->a_id }}"
-                                                                name="age" value="{{ $item->age }}" readonly>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label for="address{{ $item->a_id }}"
-                                                            class="form-label fw-bold">ที่อยู่</label>
-                                                        <textarea class="form-control" id="address{{ $item->a_id }}" name="address" rows="2" readonly>{{ $item->address }}</textarea>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label fw-bold"
-                                                            for="a_date_text{{ $item->a_id }}">วันที่นัด</label>
-                                                        <div class="input-group">
-                                                            <input class="form-control"
-                                                                id="a_date_text{{ $item->a_id }}"
-                                                                value="{{ formatThaiDate($item->a_date) }}" readonly>
-
-                                                            <input type="date" class="form-control"
-                                                                id="a_date{{ $item->a_id }}" name="a_date"
-                                                                value="{{ $item->a_date }}" readonly hidden>
-
-                                                            <input type="text" id="a_time_text{{ $item->a_id }}"
-                                                                class="form-control" value="{{ $item->a_time }}"
-                                                                readonly>
-
-                                                            @php
-                                                                $parts = explode('-', $item->a_time);
-                                                                $start = $parts[0] ?? '';
-                                                                $end = $parts[1] ?? '';
-                                                            @endphp
-                                                            <input type="text" class="form-control"
-                                                                id="a_time_start{{ $item->a_id }}"
-                                                                name="a_time_start" value="{{ $start }}"
-                                                                hidden>
-                                                            <input type="text" class="form-control"
-                                                                id="a_time_end{{ $item->a_id }}" name="a_time_end"
-                                                                value="{{ $end }}" hidden>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label for="tel{{ $item->a_id }}"
-                                                            class="form-label fw-bold">เบอร์ติดต่อ</label>
-                                                        <textarea class="form-control" id="tel{{ $item->a_id }}" name="tel" rows="2" readonly>{{ $item->tel }}</textarea>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label for="note{{ $item->a_id }}"
-                                                            class="form-label fw-bold">หมายเหตุ</label>
-                                                        <textarea class="form-control" name="note" id="note{{ $item->a_id }}" rows="3" readonly>{{ $item->note }}</textarea>
-                                                    </div>
-                                                </form>
-
-                                                <div class="mt-4 pt-2 border-top text-muted small">
-                                                    <i class="fas fa-history me-1"></i>
-                                                    เพิ่มเมื่อ:
-                                                    {{ $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : '-' }}
-                                                    โดย: {{ $item->created_by ?? 'ระบบเดิม' }}
-                                                </div>
-                                            </div>
-
-                                            <!-- Modal Footer -->
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
-                                                    data-bs-dismiss="modal">ปิด</button>
-                                                <button type="button" class="btn btn-primary save-btn"
-                                                    data-id="{{ $item->a_id }}" disabled>
-                                                    <i class="fas fa-save me-1"></i>บันทึกข้อมูล
+                                        <!-- Modal Body -->
+                                        <div class="modal-body">
+                                            <div class="d-flex justify-content-end align-items-center gap-2 my-2">
+                                                <button type="button" class="btn btn-info print-btn"
+                                                    data-id="{{ $item->a_id }}">
+                                                    <i class="fas fa-print me-1"></i>พิมพ์ PDF
+                                                </button>
+                                                <button type="button" class="btn btn-warning edit-btn"
+                                                    data-id="{{ $item->a_id }}">
+                                                    <i class="fas fa-edit me-1"></i>แก้ไข
                                                 </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
 
-                            <td class="text-center">
-                                <!-- ปุ่มลบ -->
-                                <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                    data-bs-target="#deleteAppointment{{ $item->a_id }}">
-                                    ลบ
-                                </button>
+                                            <!-- Patient Info Form -->
+                                            <form id="patientInfoForm{{ $item->a_id }}">
+                                                <div class="row">
+                                                    <div class="col-8 mb-3">
+                                                        <label for="hn{{ $item->a_id }}"
+                                                            class="form-label fw-bold">HN</label>
+                                                        <input type="text" class="form-control"
+                                                            id="hn{{ $item->a_id }}" name="hn"
+                                                            value="{{ trim($item->hn) . ' - ' . $item->patient_name . ($item->hospital_name ?? '') }}"
+                                                            readonly>
+                                                    </div>
 
-                                <!-- Modal Delete -->
-                                <div class="modal fade" id="deleteAppointment{{ $item->a_id }}" tabindex="-1">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form action="{{ route('app.delete', $item->a_id) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">ยืนยันการลบ</h5>
-                                                    <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
+                                                    <div class="col mb-3">
+                                                        <label for="age{{ $item->a_id }}"
+                                                            class="form-label fw-bold">อายุ</label>
+                                                        <input class="form-control" id="age{{ $item->a_id }}"
+                                                            name="age" value="{{ $item->age }}" readonly>
+                                                    </div>
                                                 </div>
-                                                <div class="modal-body">
-                                                    ต้องการลบนัดหมายของ <strong>HN:
-                                                        {{ $item->hn . ' - ' . $item->patient_name }}</strong>
-                                                    หรือไม่?
+
+                                                <div class="mb-3">
+                                                    <label for="address{{ $item->a_id }}"
+                                                        class="form-label fw-bold">ที่อยู่</label>
+                                                    <textarea class="form-control" id="address{{ $item->a_id }}" name="address" rows="2" readonly>{{ $item->address }}</textarea>
                                                 </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">ยกเลิก</button>
-                                                    <button type="submit" class="btn btn-danger">ลบ</button>
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold"
+                                                        for="a_date_text{{ $item->a_id }}">วันที่นัด</label>
+                                                    <div class="input-group">
+                                                        <input class="form-control"
+                                                            id="a_date_text{{ $item->a_id }}"
+                                                            value="{{ formatThaiDate($item->a_date) }}" readonly>
+
+                                                        <input type="date" class="form-control"
+                                                            id="a_date{{ $item->a_id }}" name="a_date"
+                                                            value="{{ $item->a_date }}" readonly hidden>
+
+                                                        <input type="text" id="a_time_text{{ $item->a_id }}"
+                                                            class="form-control" value="{{ $item->a_time }}"
+                                                            readonly>
+
+                                                        @php
+                                                            $parts = explode('-', $item->a_time);
+                                                            $start = $parts[0] ?? '';
+                                                            $end = $parts[1] ?? '';
+                                                        @endphp
+                                                        <input type="text" class="form-control"
+                                                            id="a_time_start{{ $item->a_id }}" name="a_time_start"
+                                                            value="{{ $start }}" hidden>
+                                                        <input type="text" class="form-control"
+                                                            id="a_time_end{{ $item->a_id }}" name="a_time_end"
+                                                            value="{{ $end }}" hidden>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label for="tel{{ $item->a_id }}"
+                                                        class="form-label fw-bold">เบอร์ติดต่อ</label>
+                                                    <textarea class="form-control" id="tel{{ $item->a_id }}" name="tel" rows="2" readonly>{{ $item->tel }}</textarea>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <label for="note{{ $item->a_id }}"
+                                                        class="form-label fw-bold">หมายเหตุ</label>
+                                                    <textarea class="form-control" name="note" id="note{{ $item->a_id }}" rows="3" readonly>{{ $item->note }}</textarea>
                                                 </div>
                                             </form>
+
+                                            <div class="mt-4 pt-2 border-top text-muted small">
+                                                <i class="fas fa-history me-1"></i>
+                                                เพิ่มเมื่อ:
+                                                {{ $item->created_at ? date('d/m/Y H:i', strtotime($item->created_at)) : '-' }}
+                                                โดย: {{ $item->created_by ?? 'ระบบเดิม' }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Modal Footer -->
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary"
+                                                data-bs-dismiss="modal">ปิด</button>
+                                            <button type="button" class="btn btn-primary save-btn"
+                                                data-id="{{ $item->a_id }}" disabled>
+                                                <i class="fas fa-save me-1"></i>บันทึกข้อมูล
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- End Modal -->
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @endif
+                            </div>
+                        </td>
 
-    </div>
-    {{-- pagination --}}
-    <x-pagination :page="$page" :totalPages="$totalPages" :startNum="$startNum" :endNum="$endNum" :total="$total" />
+                        <td class="text-center">
+                            <!-- ปุ่มลบ -->
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteAppointment{{ $item->a_id }}">
+                                ลบ
+                            </button>
 
-</table>
+                            <!-- Modal Delete -->
+                            <div class="modal fade" id="deleteAppointment{{ $item->a_id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form action="{{ route('app.delete', $item->a_id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">ยืนยันการลบ</h5>
+                                                <button type="button" class="btn-close"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                ต้องการลบนัดหมายของ <strong>HN:
+                                                    {{ $item->hn . ' - ' . $item->patient_name }}</strong>
+                                                หรือไม่?
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">ยกเลิก</button>
+                                                <button type="submit" class="btn btn-danger">ลบ</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Modal -->
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
+</div>
+{{-- pagination --}}
+<x-pagination :page="$page" :totalPages="$totalPages" :startNum="$startNum" :endNum="$endNum" :total="$total" />
